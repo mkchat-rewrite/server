@@ -1,0 +1,16 @@
+{
+  "name": "considerableharmoniousproperties",
+  "version": "1.0.0",
+  "main": "main.js",
+  "dependencies": {
+    "nanoid": "^3.2.0",
+    "uWebSockets.js": "github:unetworking/uWebSockets.js#v20.6.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
