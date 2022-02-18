@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👋</title>
+    <link rel="shortcut icon" href="./imgs/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="./js/main.js" defer></script>
+</head>
+<body>
+    <form action="/chat.html" id="main" class="content">
+        <div id="welcome">
+            <h2>Welcome to MKChat</h2>
+            <h6 id="motd">Fetching Message of the Day...</h6>
+        </div>
+        <input class="input" type="text" name="name" placeholder="Nickname" autocomplete="off" required />
+        <input class="input" type="text" id="room" name="room" placeholder="Room" value="main" autocomplete="off" required />
+        <button class="btn btn-primary" id="join">Join</button>
+    </form>
+    <div class="nav">
+        <ul id="nav-list">
+            <li class="nav-item" onclick="window.location.href='/news.html'">News</li>
+            <li class="nav-item" onclick="window.location.href='/credits.html'">Credits</li>
+            <li class="nav-item" onclick="window.location.href='/donate.html'">Donate</li>
+            <li class="nav-item" onclick="window.location.href='/rooms.html'">Rooms</li>
+            <li class="nav-item" onclick="window.location.href='/about.html'">About</li>
+        </ul>
+    </div>
+</body>
+</html>

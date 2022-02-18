@@ -1,0 +1,192 @@
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css");
+@import url("./style.css");
+
+body {
+    background-repeat: no-repeat;
+    background-size: cover;
+    overflow: hidden;
+}
+
+p {
+    word-break: break-word;
+}
+
+input[type=text] {
+    padding: .5rem;
+    border: none;
+    border-radius: .3rem;
+    background: #4f4f4f;
+    color: #ffffff;
+}
+
+input[type=file]{
+    display: none;
+}
+
+.main {
+    height: 100vh;
+    width: 100vw;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(4, 1fr) .4fr;
+    grid-column-gap: 0rem;
+    grid-row-gap: 0rem;
+}
+
+.message {
+    padding: .5rem;
+}
+
+.message:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.message .author {
+    font-size: 1.1rem;
+    margin-bottom: .3rem;
+}
+
+.message .content .text {
+    display: block;
+    color: #ffffff;
+}
+
+#sidebar {
+    grid-area: 1 / 1 / 6 / 2;
+    text-align: center;
+    overflow: scroll;
+    overflow-x: hidden;
+    color: #ffffff;
+    background: #292929;
+}
+
+#nav {
+    display: flex;
+    justify-content: space-evenly;
+    padding: 2.5rem 0 2.5rem 0;
+}
+
+#nav i {
+    color: #ffffff;
+    text-shadow: 0px 0px 5px #ffffff;
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: text-shadow .15s, transform 1s, background .15s;
+}
+
+#nav i:hover {
+    color: #449cf8;
+    text-shadow: 0px 0px 5px #449cf8;
+    transform: rotate(360deg);
+}
+
+#userlist {
+    display: flex;
+    flex-direction: column;
+    padding: 0rem .5rem;
+    gap: .5rem;
+}
+
+#userlist .user {
+    background: #4f4f4f;
+    color: #ffffff;
+    border-radius: .3rem;
+    height: 3rem;
+    line-height: 3rem;
+    padding-left: .5rem;
+    text-align: left;
+}
+
+#msgbox {
+    padding: .75rem;
+    grid-area: 5 / 2 / 6 / 6;
+    display: flex;
+    align-items: center;
+    background: #292929;
+}
+
+#msg {
+    width: 100%;
+    margin-right: .75rem;
+    font-size: 1.2rem;
+}
+
+#msg:focus {
+    outline: solid .15rem #449cf8;
+}
+
+#msg::placeholder {
+    color: #a3a3a3;
+}
+
+#send {
+    font-size: 1.2rem;
+}
+
+#messages {
+    background: #1d1d1d;
+    grid-area: 1 / 2 / 5 / 6;
+}
+
+#messagelist {
+    height: 100%;
+    overflow: scroll;
+    overflow-x: hidden;
+    padding: .75rem;
+    display: grid;
+    grid-template-rows: repeat(8, 1fr);
+    grid-gap: 1rem;
+}
+
+@media screen and (max-width: 1000px) {
+    .modal-content {
+        width: 90vw;
+    }
+}
+
+@media (max-width: 60rem) {
+    #sidebar {
+        display: none;
+    }
+    #msgbox {
+        grid-area: 5 / 1 / 6 / 6;
+    }
+    #messages {
+        grid-area: 1 / 1 / 5 / 6;
+    }
+}
+
+@media (max-width: 30rem) {
+    #sidebar {
+        grid-area: 1 / 1 / 6 / 6;
+    }
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+.avatar {
+    width: 3rem;
+    height: 3rem;
+    float: left;
+    margin-right: .5rem;
+    border-radius: 100%;
+}
+
+.badge {
+    background: #449cf8;
+    color: #f0f0f0;
+    padding: .25rem .5rem;
+    border: none;
+    outline: none;
+    border-radius: .2rem;
+    font-size: .7rem;
+    margin-left: .5rem;
+}
+
+.timestamp {
+    font-size: .7rem;
+    color: #969696;
+    margin-left: .5rem;
+}
