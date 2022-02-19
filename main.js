@@ -3,7 +3,11 @@ TODO:
     - filter messages and ratelimit to prevent xss, blocked words, and spam
     - filter names to prevent xss and blocked words
     - discord channel mirroring for main rooms
-    - markdown support
+    - markdown support (partially done with # * {i} becoming h{i})
+    - bans
+    - take fraud score of ip into account
+    - verbose alerts through discord bot
+    - moderation dashboard
 
     *** Currently there are simple solutions for  both xss and word filtering, but word filtering should be improved to stop bypassing by adding chars to the word ( - probably needs to be done with regex :( - ) ***
 */
@@ -106,7 +110,7 @@ app.get("/join/:id", (reply, req) => {
 
     if (!users.get(id) || !ip || !name || !query.room) {
         return reply.end("err");
-    } else if (false/*userlist.includes(name)*/) {
+    } else if (userlist.includes(name)) {
         return reply.end("username taken");
     } else if (false) {
         return reply.end("username invalid");
@@ -159,7 +163,7 @@ function listUsers(users, room) {
 };
 
 function formatName(name) {
-    return name.replace(/(%3C|%3E)/g, ""); // simple xss prevention
+    return name.replace(/(%3C|%3E)/g, "");
 };
 
 function formatMessage(message) {
@@ -203,6 +207,7 @@ function replaceWithStars(str) {
     return result;
 };
 
+// ### text -> <h3>text</h3>
 function headerParser(text) {
     if (!text.startsWith("#")) return text;
     
