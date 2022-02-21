@@ -4,8 +4,7 @@ TODO:
     - filter names to prevent xss and blocked words
     - discord channel mirroring for main rooms
     - markdown support (partially done with # * {i} becoming h{i})
-    - bans
-    - verbose alerts through discord bot
+    - ban
     - moderation dashboard
 
     *** Currently there are simple solutions for  both xss and word filtering, but word filtering should be improved to stop bypassing by adding chars to the word ( - probably needs to be done with regex :( - ) ***
@@ -14,9 +13,12 @@ TODO:
 const fs = require("fs");
 const { nanoid } = require("nanoid");
 const mime = require("mime-types");
+const { FastRateLimit } = require("fast-ratelimit");
+const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
+const Eris = require("eris");
 const uws = require("uWebSockets.js");
 const app = uws.App();
-const PORT = process.env.PORT || 3000;
+const config = require("./config.js");
 
 const users = new Map();
 
@@ -61,10 +63,12 @@ app.ws("/*", {
                 break;
             case "message":
                 // published globally to the room through app instead of by the user socket, so the client recieves it's own message back and the message is equally mirrored across all clients
-                app.publish(`rooms/${room}`, buildMessage({
-                    author: user.username,
-                    text: formatMessage(message.text)
-                }));
+                ratelimit.consume(ws.id).then(() => {
+                    app.publish(`rooms/${room}`, buildMessage({
+                        author: user.username,
+                        text: formatMessage(message.text)
+                    }));
+                }).catch(() => { /* message gets eaten 😋 */ });
                 break;
             default:
                 break;
@@ -126,7 +130,7 @@ app.get("/join/:id", (reply, req) => {
     reply.end("ok");
 });
 
-app.listen(PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${PORT}`));
+app.listen(config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
 
 function abToStr(buf) {
     return Buffer.from(buf).toString("utf8");
