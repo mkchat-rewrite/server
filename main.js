@@ -14,11 +14,13 @@ const fs = require("fs");
 const { nanoid } = require("nanoid");
 const mime = require("mime-types");
 const { FastRateLimit } = require("fast-ratelimit");
-const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
 const Eris = require("eris");
 const uws = require("uWebSockets.js");
-const app = uws.App();
 const config = require("./config.js");
+
+const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
+const bot = new Eris(config.BOT_TOKEN, { intents: [ "guildMessages" ] });
+const app = uws.App();
 
 const users = new Map();
 
@@ -140,6 +142,14 @@ app.get("/join/:id", (reply, req) => {
 
 app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
 
+bot.on("ready", () => {
+    console.log("Discord bot online!");
+});
+
+bot.on("error", err => console.error("Discord bot error: ", err));
+
+// bot.connect(); - commented because no token yet :)
+
 function abToStr(buf) {
     return Buffer.from(buf).toString("utf8");
 };
@@ -236,7 +246,7 @@ function headerParser(text) {
     return text.replace(/#+/g, `<h${occurences}>`) + `</h${occurences}>`;
 };
 
-// folder name supplied should have no slashes only the folder name (unless subfolder ex. folder/subfolder)
+// folder name supplied should have no slashes (unless subfolder ex. folder/subfolder)
 function registerWebAssets(folder) {        
     const files = fs.readdirSync(folder);
 
