@@ -5,14 +5,15 @@ TODO:
     - discord channel mirroring for main rooms
     - markdown support (partially done with # * {i} becoming h{i})
     - bans
-    - take fraud score of ip into account
     - verbose alerts through discord bot
     - moderation dashboard
 
     *** Currently there are simple solutions for  both xss and word filtering, but word filtering should be improved to stop bypassing by adding chars to the word ( - probably needs to be done with regex :( - ) ***
 */
 
+const fs = require("fs");
 const { nanoid } = require("nanoid");
+const mime = require("mime-types");
 const uws = require("uWebSockets.js");
 const app = uws.App();
 const PORT = process.env.PORT || 3000;
@@ -92,9 +93,7 @@ app.ws("/*", {
     }
 });
 
-app.get("/", (reply, _req) => {
-    reply.end("h");
-});
+registerWebAssets("web"); // registers endpoints to serve client code at root
 
 app.get("/join/:id", (reply, req) => {
     const id = req.getParameter();
@@ -114,7 +113,9 @@ app.get("/join/:id", (reply, req) => {
         return reply.end("username taken");
     } else if (false) {
         return reply.end("username invalid");
-    };
+    } else if (false) {
+        return reply.end("you are banned");
+    }; // *cough* yandere dev technique
 
     users.set(id, {
         username: name,
@@ -141,8 +142,11 @@ function parseMessage(msg) {
 
 // this function is probably over complicated, but it gets the job done so i see no issue with it rn
 function parseQuery(queryStr) {
-    const items = queryStr.split("&");
     const result = {};
+
+    if (!queryStr) return result;
+    
+    const items = queryStr.split("&");
 
     for (const item of items) {
         const keyValue = item.split("=");
@@ -163,7 +167,7 @@ function listUsers(users, room) {
 };
 
 function formatName(name) {
-    return name.replace(/(%3C|%3E)/g, "");
+    return name ? name.replace(/(%3C|%3E)/g, "") : "";
 };
 
 function formatMessage(message) {
@@ -220,11 +224,30 @@ function headerParser(text) {
     return text.replace(/#+/g, `<h${occurences}>`) + `</h${occurences}>`;
 };
 
+// folder name supplied should have no slashes only the folder name (unless subfolder ex. folder/subfolder)
+function registerWebAssets(folder) {
+    const files = fs.readdirSync(folder);
+
+    for (const file of files) {
+        if (!file.includes(".")) {
+            registerWebAssets(`./${folder}/${file}`);
+            continue;
+        };
+
+        const data = fs.readFileSync(`./${folder}/${file}`);
+
+        const prefix = folder.replace(/(.\/web|web)/, ""); // hardcoding this makes passing folder name as param useless, but who cares
+    
+        app.get(`${prefix}/${file}`, (reply, _req) => {
+            reply.writeHeader("Content-Type", mime.lookup(file)).end(data);
+        });
+    };
+};
+
 /*
     README: The initial connection is essentially a back and forth dance between client and server, which i do not consider ideal, however it seems to work well enough and I would consider it better than using the bloated socket.io package.
 */
 
 /*
-    message data that is produced from data provided by the client: author, text, emoji
-    message data that is produced only by the server: badge, buttons
+    todo: move some of this crap to sperate files because having everything here is mentally retarded and bad
 */
