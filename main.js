@@ -99,6 +99,12 @@ app.ws("/*", {
 
 registerWebAssets("web"); // registers endpoints to serve client code at root
 
+app.get("/", (reply, _req) => {
+     /* removing index will break this, but i see no reason why index would be removed to begin with */
+    const data = fs.readFileSync("./web/index.html", "utf8");
+    reply.writeHeader("Content-Type", "text/html").end(data);
+});
+
 app.get("/join/:id", (reply, req) => {
     const id = req.getParameter();
     const ips = req.getHeader("x-forwarded-for").split(", ");
@@ -229,7 +235,7 @@ function headerParser(text) {
 };
 
 // folder name supplied should have no slashes only the folder name (unless subfolder ex. folder/subfolder)
-function registerWebAssets(folder) {
+function registerWebAssets(folder) {        
     const files = fs.readdirSync(folder);
 
     for (const file of files) {
