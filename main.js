@@ -102,9 +102,7 @@ registerWebAssets("web"); // registers endpoints to serve client code at root
 app.get("/", (reply, _req) => {
      /* removing index will break this, but i see no reason why index would be removed to begin with */
     const data = fs.readFileSync("./web/index.html", "utf8");
-    reply.writeHeader("Content-Type", "text/html");
-    reply.write(data);
-    reply.end();
+    reply.writeHeader("Content-Type", "text/html").end(data);
 });
 
 app.get("/join/:id", (reply, req) => {
