@@ -1,6 +1,6 @@
 /*
 TODO:
-    - filter messages and ratelimit to prevent xss, blocked words, and spam
+    - filter messages to prevent xss and blocked words
     - filter names to prevent xss and blocked words
     - discord channel mirroring for main rooms
     - markdown support (partially done with # * {i} becoming h{i})
@@ -102,7 +102,9 @@ registerWebAssets("web"); // registers endpoints to serve client code at root
 app.get("/", (reply, _req) => {
      /* removing index will break this, but i see no reason why index would be removed to begin with */
     const data = fs.readFileSync("./web/index.html", "utf8");
-    reply.writeHeader("Content-Type", "text/html").end(data);
+    reply.writeHeader("Content-Type", "text/html");
+    reply.write(data);
+    reply.end();
 });
 
 app.get("/join/:id", (reply, req) => {
@@ -118,25 +120,27 @@ app.get("/join/:id", (reply, req) => {
     // i hate cors so much
 
     if (!users.get(id) || !ip || !name || !query.room) {
-        return reply.end("err");
+        reply.write("err");
     } else if (userlist.includes(name)) {
-        return reply.end("username taken");
+        reply.write("username taken");
     } else if (false) {
-        return reply.end("username invalid");
+        reply.write("username invalid");
     } else if (false) {
-        return reply.end("you are banned");
+        reply.write("you are banned");
+    } else {
+        users.set(id, {
+            username: name,
+            ip,
+            room: query.room
+        });
+    
+        reply.write("ok");
     }; // *cough* yandere dev technique
 
-    users.set(id, {
-        username: name,
-        ip,
-        room: query.room
-    });
-
-    reply.end("ok");
+    reply.end();
 });
 
-app.listen(config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
+app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
 
 function abToStr(buf) {
     return Buffer.from(buf).toString("utf8");
