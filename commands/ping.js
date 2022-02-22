@@ -1,6 +1,6 @@
 module.exports = {
-    exec: (/* pass args */) => {
-        console.log("ping"); //
+    exec: (bot, message, args) => {
+        bot.createMessage(message.channel.id, "pong");
     },
     meta: {
         name: "ping",
