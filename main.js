@@ -25,6 +25,8 @@ const app = uws.App();
 const users = new Map();
 
 app.ws("/*", {
+    idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason
+    
     open: ws => {
         ws.id = nanoid(16);
 
@@ -71,6 +73,11 @@ app.ws("/*", {
                         text: formatMessage(message.text)
                     }));
                 }).catch(() => { /* message gets eaten 😋 */ });
+
+                const channel = config.CHANNELS[room];
+                if (!channel) return;
+
+                bot.createMessage(channel, message.text);
                 break;
             default:
                 break;
@@ -143,12 +150,25 @@ app.get("/join/:id", (reply, req) => {
 app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
 
 bot.on("ready", () => {
-    console.log("Discord bot online!");
+    console.log("Discord bot online!", bot.user.username);
+});
+
+bot.on("messageCreate", msg => {
+    if (msg.author.id === bot.user.id) return;
+    
+    const room = config.ROOMS[msg.channel.id];
+    if (!room) return;
+    
+    app.publish(`rooms/${room}`, buildMessage({
+        author: msg.author.username,
+        text: formatMessage(msg.content),
+        badge: "Discord User"
+    }));
 });
 
 bot.on("error", err => console.error("Discord bot error: ", err));
 
-// bot.connect(); - commented because no token yet :)
+bot.connect();
 
 function abToStr(buf) {
     return Buffer.from(buf).toString("utf8");
@@ -243,7 +263,7 @@ function headerParser(text) {
         if (char === "#" && occurences < 6) occurences++;
     };
 
-    return text.replace(/#+/g, `<h${occurences}>`) + `</h${occurences}>`;
+    return text.replace(/#+/, `<h${occurences}>`) + `</h${occurences}>`;
 };
 
 // folder name supplied should have no slashes (unless subfolder ex. folder/subfolder)
