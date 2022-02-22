@@ -1,13 +1,10 @@
 /*
 TODO:
-    - filter messages to prevent xss and blocked words
-    - filter names to prevent xss and blocked words
-    - discord channel mirroring for main rooms (partially done)
+    - filter messages to prevent blocked words
+    - filter names to prevent blocked words
     - markdown support (partially done with # * {i} becoming h{i})
-    - ban
+    - bans
     - moderation dashboard
-
-    *** Currently there are simple solutions for  both xss and word filtering, but word filtering should be improved to stop bypassing by adding chars to the word ( - probably needs to be done with regex :( - ) ***
 */
 
 const fs = require("fs");
@@ -23,9 +20,11 @@ const bot = new Eris(config.BOT_TOKEN, { intents: [ "guildMessages" ] });
 const app = uws.App();
 
 const users = new Map();
+bot.commands = new Map();
+bot.aliases = new Map();
 
 app.ws("/*", {
-    idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason
+    idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason every 2 minutes
     
     open: ws => {
         ws.id = nanoid(16);
@@ -168,6 +167,17 @@ bot.on("ready", () => {
 
 bot.on("messageCreate", msg => {
     if (msg.author.id === bot.user.id) return;
+
+    const prefix = config.BOT_PREFIX;
+    const args = message.content.slice(prefix.length).trim().split(" ");
+    const cmd = args.shift().toLowerCase();
+    const command = bot.commands.has(cmd) ? bot.commands.get(cmd) : bot.commands.get(bot.aliases.get(cmd));
+
+    try {
+        command.exec(); // pass args
+    } catch {
+        return; // these errors shouldnt matter
+    };
     
     const room = config.ROOMS[msg.channel.id];
     if (!room) return;
