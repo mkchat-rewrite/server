@@ -20,8 +20,6 @@ const bot = new Eris(config.BOT_TOKEN, { intents: [ "guildMessages" ] });
 const app = uws.App();
 
 const users = new Map();
-bot.commands = new Map();
-bot.aliases = new Map();
 
 app.ws("/*", {
     idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason every 2 minutes
@@ -161,21 +159,23 @@ app.get("/join/:id", (reply, req) => {
 
 app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
 
-bot.on("ready", () => {
-    console.log("Discord bot online!", bot.user.username);
+bot.on("ready", async () => {
+    console.log(`${bot.user.username} online!`);
+    [ bot.commands, bot.aliases ] = await loadCommands();
+    console.log("Loaded discord bot commands.");
 });
 
 bot.on("messageCreate", msg => {
     if (msg.author.id === bot.user.id) return;
 
     const prefix = config.BOT_PREFIX;
-    const args = message.content.slice(prefix.length).trim().split(" ");
+    const args = msg.content.slice(prefix.length).trim().split(" ");
     const cmd = args.shift().toLowerCase();
     const command = bot.commands.has(cmd) ? bot.commands.get(cmd) : bot.commands.get(bot.aliases.get(cmd));
 
     try {
-        command.exec(); // pass args
-    } catch {
+        command.exec(bot, msg, args); // pass args
+    } catch (err) {
         return; // these errors shouldnt matter
     };
     
@@ -309,10 +309,27 @@ function registerWebAssets(folder) {
     };
 };
 
-/*
-    README: The initial connection is essentially a back and forth dance between client and server, which i do not consider ideal, however it seems to work well enough and I would consider it better than using the bloated socket.io package.
-*/
+async function loadCommands() {
+    const commands = new Map(), aliases = new Map();
+    
+    return new Promise((res, rej) => {
+        fs.readdir("./commands", (err, files) => {
+            const commandFiles = files.filter(f => f.endsWith(".js"));
+            if (!commandFiles) rej([ null, null ]);
+            
+            for (const file of commandFiles) {
+                const cmd = require(`./commands/${file}`);
+    
+                commands.set(cmd.meta.name, cmd);
+                for (const alias of cmd.meta.aliases) {
+                    aliases.set(alias, cmd.meta.name);
+                };
+            };
+            res([ commands, aliases ]);
+        });
+    });
+};
 
 /*
-    todo: move some of this crap to sperate files because having everything here is mentally retarded and bad
+    README: The initial connection is essentially a back and forth dance between client and server, which i do not consider ideal, however it seems to work well enough and I would consider it better than using the bloated socket.io package.
 */
