@@ -2,7 +2,7 @@
 TODO:
     - filter messages to prevent xss and blocked words
     - filter names to prevent xss and blocked words
-    - discord channel mirroring for main rooms
+    - discord channel mirroring for main rooms (partially done)
     - markdown support (partially done with # * {i} becoming h{i})
     - ban
     - moderation dashboard
@@ -43,6 +43,7 @@ app.ws("/*", {
 
         const user = users.get(ws.id);
         const room = user.room;
+        const channel = config.CHANNELS[room];
 
         switch(message.type) {
             case "join":
@@ -64,6 +65,13 @@ app.ws("/*", {
                     type: "updateusers",
                     users: listUsers(users, room)
                 }));
+
+                if(channel) bot.createMessage(channel, {
+                    embed: {
+                        color: 0x33FF53,
+                        description: `**${user.username}** has joined the chat!`
+                    }
+                });
                 break;
             case "message":
                 // published globally to the room through app instead of by the user socket, so the client recieves it's own message back and the message is equally mirrored across all clients
@@ -74,10 +82,7 @@ app.ws("/*", {
                     }));
                 }).catch(() => { /* message gets eaten 😋 */ });
 
-                const channel = config.CHANNELS[room];
-                if (!channel) return;
-
-                bot.createMessage(channel, message.text);
+                if(channel) bot.createMessage(channel, `**${user.username}:** ${message.text}`);
                 break;
             default:
                 break;
@@ -103,6 +108,14 @@ app.ws("/*", {
             type: "updateusers",
             users: listUsers(users, room)
         }));
+
+        const channel = config.CHANNELS[room];
+        if(channel) bot.createMessage(channel, {
+            embed: {
+                color: 0xFF3333,
+                description: `**${user.username}** has left the chat!`
+            }
+        });
     }
 });
 
