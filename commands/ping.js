@@ -1,5 +1,5 @@
 module.exports = {
-    exec: (bot, message, args) => {
+    exec: (bot, message, args, config, users) => {
         bot.createMessage(message.channel.id, "pong");
     },
     meta: {

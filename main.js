@@ -2,14 +2,14 @@
 TODO:
     - filter messages to prevent blocked words
     - filter names to prevent blocked words
-    - markdown support (partially done with # * {i} becoming h{i})
-    - bans
-    - moderation dashboard
+    - bans & moderation dashboard
 */
 
 const fs = require("fs");
+const fetch = require("node-fetch");
 const { nanoid } = require("nanoid");
 const mime = require("mime-types");
+const db = require("quick.db");
 const { FastRateLimit } = require("fast-ratelimit");
 const Eris = require("eris");
 const uws = require("uWebSockets.js");
@@ -19,11 +19,23 @@ const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
 const bot = new Eris(config.BOT_TOKEN, { intents: [ "guildMessages" ] });
 const app = uws.App();
 
-const users = new Map();
+class UserMap extends Map {
+    list(room) {
+        const result = [];
+
+        for (const user of this.values()) {
+            if (user.room === room) result.push(user.username);
+        };
+
+        return result;
+    };
+};
+
+const users = new UserMap();
 
 app.ws("/*", {
     idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason every 2 minutes
-    
+
     open: ws => {
         ws.id = nanoid(16);
 
@@ -43,29 +55,23 @@ app.ws("/*", {
         const channel = config.CHANNELS[room];
 
         switch(message.type) {
-            case "join":
-                ws.send(buildMessage({
-                    author: "SERVER",
-                    text: `Welcome to room: ${room}`,
-                    badge: "system"
-                }));
-                
+            case "join":                
+                if (!(user.username || user.ip || user.room)) return ws.end(0, "inv"); // incase the join http request from client fails for whatever reason, todo: find out why client doesnt receive close message
+
+                ws.send(buildServerMessage(`Welcome to room: ${room}`));
+
                 ws.subscribe(`rooms/${room}`); // connects the client to desired room
 
-                ws.publish(`rooms/${room}`, buildMessage({
-                    author: "SERVER",
-                    text: `${user.username} has joined`,
-                    badge: "system"
-                }));
-                
+                ws.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.SUCCESS};">${user.username} has joined!</span>`));
+
                 app.publish(`rooms/${room}`, JSON.stringify({
                     type: "updateusers",
-                    users: listUsers(users, room)
+                    users: users.list(room)
                 }));
 
                 if(channel) bot.createMessage(channel, {
                     embed: {
-                        color: 0x33FF53,
+                        color: config.EMBED_COLORS.SUCCESS,
                         description: `**${user.username}** has joined the chat!`
                     }
                 });
@@ -75,7 +81,7 @@ app.ws("/*", {
                 ratelimit.consume(ws.id).then(() => {
                     app.publish(`rooms/${room}`, buildMessage({
                         author: user.username,
-                        text: formatMessage(message.text)
+                        text: filterMessage(message.text)
                     }));
                 }).catch(() => { /* message gets eaten 😋 */ });
 
@@ -95,21 +101,17 @@ app.ws("/*", {
 
         users.delete(ws.id);
 
-        app.publish(`rooms/${room}`, buildMessage({
-            author: "SERVER",
-            text: `${user.username} has left`,
-            badge: "system"
-        }));
+        app.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.ERROR};">${user.username} has left!</span>`));
 
         app.publish(`rooms/${room}`, JSON.stringify({
             type: "updateusers",
-            users: listUsers(users, room)
+            users: users.list(room)
         }));
 
         const channel = config.CHANNELS[room];
         if(channel) bot.createMessage(channel, {
             embed: {
-                color: 0xFF3333,
+                color: config.EMBED_COLORS.ERROR,
                 description: `**${user.username}** has left the chat!`
             }
         });
@@ -119,7 +121,7 @@ app.ws("/*", {
 registerWebAssets("web"); // registers endpoints to serve client code at root
 
 app.get("/", (reply, _req) => {
-     /* removing index will break this, but i see no reason why index would be removed to begin with */
+     /* removing index will crash the server, but i see no reason why index would be removed to begin with */
     const data = fs.readFileSync("./web/index.html", "utf8");
     reply.writeHeader("Content-Type", "text/html").end(data);
 });
@@ -129,14 +131,15 @@ app.get("/join/:id", (reply, req) => {
     const ips = req.getHeader("x-forwarded-for").split(", ");
     const ip = ips[ips.length - 1];
     const query = parseQuery(req.getQuery());
-    const userlist = listUsers(users, query.room);
-    const name = formatName(query.name);
+    const room = removeHtml(query.room);
+    const userlist = users.list(room);
+    const name = filterName(query.name);
 
     reply.writeHeader("Access-Control-Allow-Origin", "*");
     reply.writeHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     // i hate cors so much
 
-    if (!users.get(id) || !ip || !name || !query.room) {
+    if (!users.get(id) || !ip || !name || !room) {
         reply.write("err");
     } else if (userlist.includes(name)) {
         reply.write("username taken");
@@ -148,7 +151,7 @@ app.get("/join/:id", (reply, req) => {
         users.set(id, {
             username: name,
             ip,
-            room: query.room
+            room: room
         });
     
         reply.write("ok");
@@ -157,11 +160,22 @@ app.get("/join/:id", (reply, req) => {
     reply.end();
 });
 
+app.get("/bans", (reply, req) => {
+    const query = parseQuery(req.getQuery());
+    const password = query.password;
+});
+
 app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
 
 bot.on("ready", async () => {
     console.log(`${bot.user.username} online!`);
-    [ bot.commands, bot.aliases ] = await loadCommands();
+
+    try {
+        [ bot.commands, bot.aliases ] = await loadCommands();
+    } catch (err) {
+        console.error(err);
+    };
+
     console.log("Loaded discord bot commands.");
 });
 
@@ -174,17 +188,17 @@ bot.on("messageCreate", msg => {
     const command = bot.commands.has(cmd) ? bot.commands.get(cmd) : bot.commands.get(bot.aliases.get(cmd));
 
     try {
-        command.exec(bot, msg, args); // pass args
+        command.exec(bot, msg, args, config, users); // pass args
     } catch (err) {
         return; // these errors shouldnt matter
     };
-    
+
     const room = config.ROOMS[msg.channel.id];
     if (!room) return;
-    
+
     app.publish(`rooms/${room}`, buildMessage({
         author: msg.author.username,
-        text: formatMessage(msg.content),
+        text: filterMessage(msg.content),
         badge: "Discord User"
     }));
 });
@@ -210,43 +224,49 @@ function parseQuery(queryStr) {
     const result = {};
 
     if (!queryStr) return result;
-    
-    const items = queryStr.split("&");
+
+    const items = decodeURI(queryStr).split("&");
 
     for (const item of items) {
         const keyValue = item.split("=");
-        result[keyValue[0]] = keyValue[1].replace(/%20/g, " ");
+        result[keyValue[0]] = keyValue[1];
     };
 
     return result;
 };
 
-function listUsers(users, room) {
-    const result = [];
+function filterName(name) {
+    if (!name) return "";
     
-    for (const user of users.values()) {
-        if (user.room === room) result.push(user.username);
-    };
-
-    return result;
+    return removeHtml(name);
 };
 
-function formatName(name) {
-    return name ? name.replace(/(%3C|%3E)/g, "") : "";
+function filterMessage(message) {
+    const nohtml = removeHtml(message);
+    return quoteParser(headerParser(wordFilter(nohtml)));
 };
 
-function formatMessage(message) {
-    const nohtml = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    return headerParser(wordFilter(nohtml));
+function removeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/`/g, "&#x60;").replace(/\(/g, "&#40;").replace(/\)/g, "&#41;");
 };
 
-function buildMessage({ author, text, badge }) {
+function buildMessage({ author, text, badge, avatar }) {
     return JSON.stringify({
         type: "message",
         author,
         text,
         badge,
+        avatar,
         date: new Date()
+    });
+};
+
+function buildServerMessage(text) {
+    return buildMessage({
+        author: "SERVER",
+        text: text,
+        badge: "system",
+        avatar: "https://websocket-client.distrust.repl.co/imgs/favicon.png"
     });
 };
 
@@ -259,7 +279,6 @@ function wordFilter(text) {
 
     for (const word of seperated) {
         const filtered = disallowed.includes(word) ? replaceWithStars(word) : word;
-        
         result.push(filtered);
     };
 
@@ -268,7 +287,7 @@ function wordFilter(text) {
 
 function replaceWithStars(str) {
     let result = "";
-    
+
     for (let i = 0; i < str.length; i++) {
         result += "*";
     };
@@ -279,14 +298,20 @@ function replaceWithStars(str) {
 // ### text -> <h3>text</h3>
 function headerParser(text) {
     if (!text.startsWith("#")) return text;
-    
+
     let occurences = 0;
-    
+
     for (const char of text) {
         if (char === "#" && occurences < 6) occurences++;
     };
 
     return text.replace(/#+/, `<h${occurences}>`) + `</h${occurences}>`;
+};
+
+function quoteParser(text) {
+    if (!text.startsWith("&gt;")) return text;
+
+    return `${text.replace("&gt;", "<span class='blockquote'>")}</span>`;
 };
 
 // folder name supplied should have no slashes (unless subfolder ex. folder/subfolder)
@@ -302,7 +327,7 @@ function registerWebAssets(folder) {
         const data = fs.readFileSync(`./${folder}/${file}`);
 
         const prefix = folder.replace(/(.\/web|web)/, ""); // hardcoding this makes passing folder name as param useless, but who cares
-    
+
         app.get(`${prefix}/${file}`, (reply, _req) => {
             reply.writeHeader("Content-Type", mime.lookup(file)).end(data);
         });
@@ -311,15 +336,15 @@ function registerWebAssets(folder) {
 
 async function loadCommands() {
     const commands = new Map(), aliases = new Map();
-    
+
     return new Promise((res, rej) => {
-        fs.readdir("./commands", (err, files) => {
+        fs.readdir("./commands", (err, files) => {            
             const commandFiles = files.filter(f => f.endsWith(".js"));
-            if (!commandFiles) rej([ null, null ]);
-            
+            if (!commandFiles) rej("The commands folder does not contain any javascript files!");
+
             for (const file of commandFiles) {
                 const cmd = require(`./commands/${file}`);
-    
+
                 commands.set(cmd.meta.name, cmd);
                 for (const alias of cmd.meta.aliases) {
                     aliases.set(alias, cmd.meta.name);
@@ -330,6 +355,30 @@ async function loadCommands() {
     });
 };
 
-/*
-    README: The initial connection is essentially a back and forth dance between client and server, which i do not consider ideal, however it seems to work well enough and I would consider it better than using the bloated socket.io package.
-*/
+async function logJoin(name, ip, id, room) {
+    await fetch(config.WEBHOOK_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            embeds: [{
+                "description": `**${name}** joined the chat!`,
+                "color": 0x7189FF,
+                "timestamp": new Date().toISOString(),
+                "fields": [
+                    {
+                        "name": "IP:",
+                        "value": ip
+                    },
+                    {
+                        "name": "Socket ID:",
+                        "value": id
+                    },
+                    {
+                        "name": "Room:",
+                        "value": room
+                    }
+                ]
+            }]
+        }),
+        headers: { "Content-Type": "application/json" }
+    });
+};

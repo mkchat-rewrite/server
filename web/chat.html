@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat | MKChat</title>
+    <link rel="shortcut icon" href="./imgs/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="./css/chat.css">
+    <script src="./js/tata.js"></script>
+    <script src="./js/logger.js"></script>
+    <script src="./js/chat.js" defer></script>
+    <script src="./js/color.js" defer></script>
+</head>
+<body>
+    <div class="modal invisible">
+        <div class="modal-content">
+            <span class="modal-header">Settings</span>
+            <div class="modal-body">
+                <div class="modal-nav">
+                    <button class="btn btn-modal-nav btn-active">Accent</button>
+                    <button class="btn btn-modal-nav">Background</button>
+                    <button class="btn  btn-modal-nav">Misc</button>
+                </div>
+                <div class="modal-item">
+                    Temporarily Disabled
+                    <!-- too lazy to finish this -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary close">Close</button>
+            </div>
+        </div>
+    </div>
+    <div class="main">
+        <div id="sidebar">
+            <div id="nav">
+                <i class="fa-solid fa-house" onclick="window.location.replace('/')"></i>
+                <i class="fa-solid fa-gear" onclick="toggleModal()"></i>
+                <i class="fa-solid fa-video" onclick="joinVideo()"></i>
+            </div>
+            <div id="userlist"></div>
+        </div>
+        <form id="msgbox">
+            <input type="text" id="msg" placeholder="Message" maxlength="250" autocomplete="off" data-emojiable="true" data-emoji-input="unicode" autofocus />
+            <button type="submit" class="btn btn-primary" id="send">Send</button>
+        </form>
+        <div id="messages">
+            <div id="messagelist"></div>
+        </div>
+    </div>
+</body>
+</html>
