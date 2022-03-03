@@ -1,5 +1,5 @@
-const SERVER_URL = "mkchat.app";
-const ws = new WebSocket(`wss://${SERVER_URL}`);
+const SERVER_URL = window.location.host;
+const ws = new WebSocket(`ws://${SERVER_URL}`);
 
 ws.onopen = () => {
     logger.info("Websocket Connection Opened");
@@ -16,12 +16,13 @@ ws.onmessage = msg => {
         case "connect":
             const id = message.id;
 
-            fetch(`https://${SERVER_URL}/join/${id}?name=${params.name}&room=${params.room}`).then(res => res.text()).then(data => {
+            fetch(`http://${SERVER_URL}/join/${id}?name=${params.name}&room=${params.room}`).then(res => res.text()).then(data => {
                 if (data != "ok") return disconnect(data);
 
                 ws.send(JSON.stringify({ type: "join" }));
                 tata.success("Joined", `You have successfully joined room ${params.room}!`);
             });
+            setInterval(() => ws.send(JSON.stringify({ type: "ping" })), 5000);
             break;
         case "message":
             console.log("new chat message recieved: ", message);
@@ -44,9 +45,17 @@ ws.onmessage = msg => {
     };
 };
 
-ws.onclose = () => {
+ws.onclose = e => {
     logger.error("Websocket Connection Closed");
-    disconnect();
+    
+    switch(e.reason) {
+        case "banned":
+            disconnect(e.reason, false);
+            break;
+        default:
+            disconnect(null, true);
+            break;
+    };
 };
 
 function disconnect(reason, rejoin) {
@@ -96,6 +105,24 @@ function appendMessage(message) {
     content.appendChild(text);
     text.classList.add("text");
     text.innerHTML = message.text;
+
+    if (!message.sticker) return;
+
+    if (message.sticker.type === 1) {
+        const sticker = document.createElement("img");
+        content.appendChild(sticker);
+        sticker.classList.add("sticker");
+        sticker.src = message.sticker.url;
+    } else {
+        const sticker = document.createElement("lottie-player");
+        content.appendChild(sticker);
+        sticker.classList.add("sticker");
+        sticker.src = message.sticker.url;
+        sticker.background = "transparent";
+        sticker.speed = "1";
+        sticker.autoplay = true;
+        sticker.loop = true;
+    };
 };
 
 document.getElementById("msgbox").onsubmit = e => {
@@ -152,7 +179,7 @@ function getColor(user) {
 function getAvatar(user) {
     const color = getColor(user);
 
-    return `https://proxy.mkchat.app/avatars/${user}.svg?b=${color.replace("#", "%23")}`;
+    return `https://proxy.mkchat.app/genericavatars/${user}.svg?b=${color.replace("#", "%23")}`;
     // 🎲🐻
 };
 

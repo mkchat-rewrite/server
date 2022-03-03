@@ -130,3 +130,31 @@ input:focus {
 ::-webkit-scrollbar-corner {
     background: rgba(0, 0, 0, 0);
 }
+
+p {
+    word-break: break-word;
+}
+
+#rules {
+    overflow: scroll;
+    height: 86%;
+}
+
+#rulelist {
+    display: flex;
+    flex-direction: column;
+    margin-left: 1rem;
+}
+
+#rulelist li {
+    margin: .5rem;
+}
+
+h1 {
+    color: var(--accent);
+}
+
+.rule-title {
+    color: rgba(var(--accent-r),var(--accent-g),var(--accent-b), 0.6);
+    font-size: 1.2rem;
+}

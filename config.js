@@ -5,7 +5,7 @@ module.exports = {
     BOT_TOKEN: "OTQ1NDU5MDkwNzIzODMxODI4.YhQdZQ.8uOLLl55QU5vZtwOUENpJh5mmP0",
     BOT_PREFIX: "m?",
     WEBHOOK_URL: "https://discord.com/api/webhooks/835669251528196119/vKlakXl4BHSyutAJfzs-sKLrI_TRSumSmIrRf1lkmn-yKpZisonuL4xy2hR5iFiSBUhj",
-    MODERATION_PASSWORD: "",
+    MODERATION_PASSWORD: "e",
     ROOMS: {
         "945461992439808030": "main",
         "945462013323264030": "main2",
@@ -39,5 +39,10 @@ module.exports = {
         INFO: "#449cf8",
         SUCCESS: "#00C059",
         ERROR: "#FF3333"
+    },
+    DATABASE: {
+        URL: "https://oyzzthycfrqozzbmcjry.supabase.co",
+        KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95enp0aHljZnJxb3p6Ym1janJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDYxNzIzNTEsImV4cCI6MTk2MTc0ODM1MX0.uQ8FBwH0EKZ7RyMgOQs7vAVJhXL0txDBoLe4IZTcIRo",
+        TABLE: "bans"
     }
 };

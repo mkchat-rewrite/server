@@ -1,0 +1,132 @@
+@import url("https://fonts.googleapis.com/css2?family=Ubuntu:wght@500&display=swap");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css");
+
+:root {
+    --primary: 255, 33, 66;
+    --primary-dark: 194, 15, 42;
+    --secondary: 130, 130, 130;
+    --secondary-dark: 79, 79, 79;
+}
+
+* {
+    font-family: "Ubuntu", sans-serif;
+}
+
+.btn {
+    padding: .5rem .75rem;
+    border-radius: .3rem;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: .15s;
+    color: rgb(255, 255, 255);
+    background: rgba(0, 0, 0, 0);
+    border: .1rem solid rgba(0, 0, 0, 0);
+    outline: none;
+}
+
+.btn:active {
+    box-shadow: 0 0 0 .2rem rgba(var(--primary), .5);
+}
+
+.btn-primary {
+    color: rgb(255, 255, 255);
+    background: rgb(var(--primary));
+    border-color: rgb(var(--primary-dark));
+}
+
+.btn-primary:active {
+    box-shadow: 0 0 0 .2rem rgba(var(--primary), .5);
+}
+
+.btn-secondary {
+    color: rgb(255, 255, 255);
+    background: rgb(var(--secondary));    
+    border-color: rgb(var(--secondary-dark));
+}
+
+.btn-secondary:active {
+    box-shadow: 0 0 0 .2rem rgba(var(--secondary), .5);
+}
+
+.checkbox {
+    height: 2rem;
+}
+
+.checkbox input {
+    position: relative;
+    height: calc(1.5rem / 2);
+    width: 1.5rem;
+    border-radius: .2rem;
+    z-index: 9;
+    background: red;
+}
+
+.checkbox input::before, .checkbox input::after {
+    pointer-events: auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: .15s;
+}
+
+.checkbox input::before {
+    background: rgb(var(--secondary));
+    border-radius: .2rem;
+    height: 1.5rem;
+    width: 1.5rem;
+    content: "";
+}
+
+.checkbox input:hover::before {
+    background: rgb(97, 97, 97);
+}
+
+.checkbox input:checked::before {
+    background: rgb(var(--primary));
+    z-index: -1;
+}
+
+.checkbox input:checked:hover::before {
+    background: rgb(var(--primary-dark));
+    z-index: -1;
+}
+
+.checkbox input:checked::after {
+    font: var(--fa-font-solid);
+    content: "\f00c";
+    font-size: 1.2rem;
+}
+
+.checkbox-title {
+    display: inline;
+    height: 3rem;
+}
+
+.checkbox::selection, .checkbox-title::selection {
+    background: rgba(0, 0, 0, 0);
+}
+
+.badge {
+    padding: .25rem;
+    border-radius: .3rem;
+    font-size: .9rem;
+    background: rgb(var(--primary));
+    border: .1rem rgb(var(--primary-dark)) solid;
+}
+
+input[type=text] {
+    padding: .5rem .75rem;
+    border-radius: .3rem;
+    font-size: 1.1rem;
+    border: .1rem solid rgb(var(--secondary));
+    outline: none;
+}
+
+input[type=text]:active {
+    box-shadow: 0 0 0 .2rem rgba(var(--primary), .5);
+}
+
+::selection {
+    background: rgba(255, 33, 66, .7);
+}

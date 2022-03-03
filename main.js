@@ -1,23 +1,23 @@
 /*
 TODO:
-    - filter messages to prevent blocked words
-    - filter names to prevent blocked words
-    - bans & moderation dashboard
+    - filter blocked words from messages and names
+    - finish moderation dashboard
 */
 
 const fs = require("fs");
 const fetch = require("node-fetch");
 const { nanoid } = require("nanoid");
 const mime = require("mime-types");
-const db = require("quick.db");
 const { FastRateLimit } = require("fast-ratelimit");
 const Eris = require("eris");
 const uws = require("uWebSockets.js");
+const { createClient } = require("@supabase/supabase-js");
 const config = require("./config.js");
 
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
 const bot = new Eris(config.BOT_TOKEN, { intents: [ "guildMessages" ] });
 const app = uws.App();
+const supabase = createClient(config.DATABASE.URL, config.DATABASE.KEY);
 
 class UserMap extends Map {
     list(room) {
@@ -32,6 +32,7 @@ class UserMap extends Map {
 };
 
 const users = new UserMap();
+const persistentUsers = new UserMap();
 
 app.ws("/*", {
     idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason every 2 minutes
@@ -46,7 +47,7 @@ app.ws("/*", {
             id: ws.id
         }));
     },
-    message: (ws, msg, _isBinary) => {
+    message: async (ws, msg, _isBinary) => {
         const message = parseMessage(msg);
         if (!message) return;
 
@@ -54,9 +55,14 @@ app.ws("/*", {
         const room = user.room;
         const channel = config.CHANNELS[room];
 
+        const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: user.ip });
+        if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
+
+        if (data[0]) return ws.end(1, "you are banned");
+
         switch(message.type) {
             case "join":                
-                if (!(user.username || user.ip || user.room)) return ws.end(0, "inv"); // incase the join http request from client fails for whatever reason, todo: find out why client doesnt receive close message
+                if (!(user.username || user.ip || user.room)) return ws.end(1, "invalid join data"); // incase the join http request from client fails for whatever reason, todo: find out why client doesnt receive close message
 
                 ws.send(buildServerMessage(`Welcome to room: ${room}`));
 
@@ -120,24 +126,27 @@ app.ws("/*", {
 
 registerWebAssets("web"); // registers endpoints to serve client code at root
 
-app.get("/", (reply, _req) => {
-     /* removing index will crash the server, but i see no reason why index would be removed to begin with */
-    const data = fs.readFileSync("./web/index.html", "utf8");
-    reply.writeHeader("Content-Type", "text/html").end(data);
-});
-
-app.get("/join/:id", (reply, req) => {
+app.get("/join/:id", async (reply, req) => {
     const id = req.getParameter();
     const ips = req.getHeader("x-forwarded-for").split(", ");
-    const ip = ips[ips.length - 1];
+    const ip = ips[0];
     const query = parseQuery(req.getQuery());
     const room = removeHtml(query.room);
     const userlist = users.list(room);
     const name = filterName(query.name);
 
+    reply.onAborted(() => {
+        reply.aborted = true;
+    });
+
+    if (reply.aborted) return;
+
     reply.writeHeader("Access-Control-Allow-Origin", "*");
     reply.writeHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    // i hate cors so much
+    //i hate cors so much
+
+    const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: ip });
+    if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
 
     if (!users.get(id) || !ip || !name || !room) {
         reply.write("err");
@@ -145,24 +154,107 @@ app.get("/join/:id", (reply, req) => {
         reply.write("username taken");
     } else if (false) {
         reply.write("username invalid");
-    } else if (false) {
+    } else if (data[0]) {
         reply.write("you are banned");
     } else {
-        users.set(id, {
+        const user = {
             username: name,
             ip,
             room: room
-        });
+        };
+        
+        users.set(id, user);
+        persistentUsers.set(id, { ...user, id });
     
         reply.write("ok");
     }; // *cough* yandere dev technique
-
+    
     reply.end();
 });
 
-app.get("/bans", (reply, req) => {
+app.get("/modlogin", (reply, req) => {
     const query = parseQuery(req.getQuery());
     const password = query.password;
+
+    if (password === config.MODERATION_PASSWORD) return reply.writeStatus("204").end();
+
+    //JSON.stringify(interatorToArr(persistentUsers.values()))
+    
+    reply.writeStatus("418").end(); // i'm a 🫖
+});
+
+app.get("/users", (reply, req) => {
+    const query = parseQuery(req.getQuery());
+    if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end();
+    
+    reply.writeStatus("200").end(JSON.stringify(interatorToArr(persistentUsers.values())));
+});
+
+app.get("/bans", async (reply, req) => {
+    const query = parseQuery(req.getQuery());
+    if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end();
+
+    reply.onAborted(() => {
+        reply.aborted = true;
+    });
+
+    if (reply.aborted) return;
+
+    const { data, error } = await supabase.from(config.DATABASE.TABLE).select();
+    if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
+    
+    reply.writeStatus("200").end(JSON.stringify(data));
+});
+
+app.get("/doban", async (reply, req) => {
+    const query = parseQuery(req.getQuery());
+    if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end("Invalid password!");
+
+    reply.onAborted(() => {
+        reply.aborted = true;
+    });
+
+    if (reply.aborted) return;
+
+    const isBanned = await checkBan({ ip: query.ip }).catch(err => console.error(err));
+    if (isBanned) return reply.writeStatus("400").end("User already banned!");
+    
+    const { data, error } = await supabase.from(config.DATABASE.TABLE).insert([
+        {
+            ip: query.ip,
+            username: query.username,
+            reason: query.reason,
+            length: query.length
+        }
+    ]);
+    if (error) {
+        console.error(`A fatal error has occured when attempting to ban: ${query.ip}`);
+        return reply.writeStatus("400").end("Database error!");
+    };
+
+    reply.writeStatus("204").end();
+});
+
+app.get("/unban", async (reply, req) => {
+    const query = parseQuery(req.getQuery());
+    if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end("Invalid password!");
+
+    reply.onAborted(() => {
+        reply.aborted = true;
+    });
+
+    if (reply.aborted) return;
+
+    const isBanned = await checkBan({ ip: query.ip }).catch(err => console.error(err));
+    if (!isBanned) return reply.writeStatus("400").end("User isn't banned!");
+
+    const { data, error } = await supabase.from(config.DATABASE.TABLE).delete().match({ ip: query.ip });
+    if (error) {
+        console.error(`A fatal error has occured when attempting to unban: ${query.ip}`);
+        return reply.writeStatus("400").end("Database error!");
+    };
+
+    reply.writeStatus("204").end();
 });
 
 app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
@@ -179,7 +271,7 @@ bot.on("ready", async () => {
     console.log("Loaded discord bot commands.");
 });
 
-bot.on("messageCreate", msg => {
+bot.on("messageCreate", async msg => {
     if (msg.author.id === bot.user.id) return;
 
     const prefix = config.BOT_PREFIX;
@@ -190,16 +282,20 @@ bot.on("messageCreate", msg => {
     try {
         command.exec(bot, msg, args, config, users); // pass args
     } catch (err) {
-        return; // these errors shouldnt matter
+        //return; // these errors shouldnt matter
     };
 
     const room = config.ROOMS[msg.channel.id];
     if (!room) return;
 
+    const sticker = msg.stickerItems ? msg.stickerItems[0] : null;
+    
     app.publish(`rooms/${room}`, buildMessage({
         author: msg.author.username,
         text: filterMessage(msg.content),
-        badge: "Discord User"
+        badge: "Discord User",
+        sticker: sticker ? getStickerUrl(sticker) : null,
+        avatar: await getAvatarUrl(msg.author)
     }));
 });
 
@@ -250,13 +346,14 @@ function removeHtml(text) {
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/`/g, "&#x60;").replace(/\(/g, "&#40;").replace(/\)/g, "&#41;");
 };
 
-function buildMessage({ author, text, badge, avatar }) {
+function buildMessage({ author, text, badge, avatar, sticker }) {
     return JSON.stringify({
         type: "message",
         author,
         text,
         badge,
         avatar,
+        sticker,
         date: new Date()
     });
 };
@@ -327,9 +424,20 @@ function registerWebAssets(folder) {
         const data = fs.readFileSync(`./${folder}/${file}`);
 
         const prefix = folder.replace(/(.\/web|web)/, ""); // hardcoding this makes passing folder name as param useless, but who cares
+        const mimeType = mime.lookup(file);
 
         app.get(`${prefix}/${file}`, (reply, _req) => {
-            reply.writeHeader("Content-Type", mime.lookup(file)).end(data);
+            reply.writeHeader("Content-Type", mimeType).end(data);
+        });
+        
+        if (file != "index.html") continue;
+
+        app.get(prefix || "/", (reply, _req) => {
+            reply.writeHeader("Content-Type", mimeType).end(data);
+        });
+
+        app.get(`${prefix}/`, (reply, _req) => {
+            reply.writeHeader("Content-Type", mimeType).end(data);
         });
     };
 };
@@ -340,7 +448,7 @@ async function loadCommands() {
     return new Promise((res, rej) => {
         fs.readdir("./commands", (err, files) => {            
             const commandFiles = files.filter(f => f.endsWith(".js"));
-            if (!commandFiles) rej("The commands folder does not contain any javascript files!");
+            if (err) rej(err);
 
             for (const file of commandFiles) {
                 const cmd = require(`./commands/${file}`);
@@ -381,4 +489,51 @@ async function logJoin(name, ip, id, room) {
         }),
         headers: { "Content-Type": "application/json" }
     });
+};
+
+function getStickerUrl(sticker) {
+    const result = {
+        type: sticker.format_type < 3 ? 1 : 2
+    };
+
+    switch(sticker.format_type) {
+        case 1:
+            result.url = `https://proxy.mkchat.app/stickers/${sticker.id}.webp`;
+            break;
+        case 2:
+            result.url = `https://proxy.mkchat.app/stickers/${sticker.id}.png`;
+            break;
+        case 3:
+            result.url = `https://proxy.mkchat.app/lottiesticker/${sticker.id}`;
+            break;
+    };
+
+    return result;
+};
+
+async function getAvatarUrl(author) {
+    const res = await fetch(`https://proxy.mkchat.app/avatars/${author.id}/${author.avatar}.gif`);
+    return `https://proxy.mkchat.app/avatars/${author.id}/${author.avatar}.${res.status === 200 ? "gif" : "webp"}`;
+};
+
+function interatorToArr(iterator) {
+    const result = [];
+
+    for (const item of iterator) {
+        result.push(item);
+    };
+
+    return result;
+};
+
+async function checkBan(query) {
+    const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match(query);
+
+    if (error) {
+        throw new Error(error);
+    } else if (data[0]) {
+        return true;
+    } else {
+        return false;
+    };
 };

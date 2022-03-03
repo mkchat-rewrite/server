@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat | MKChat</title>
+    <title>💬 | MKChat</title>
     <link rel="shortcut icon" href="./imgs/favicon.png" type="image/x-icon">
     <link rel="stylesheet" href="./css/chat.css">
     <script src="./js/tata.js"></script>
     <script src="./js/logger.js"></script>
     <script src="./js/chat.js" defer></script>
     <script src="./js/color.js" defer></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script> <!-- fuck you discord -->
 </head>
 <body>
     <div class="modal invisible">
@@ -45,7 +46,19 @@
             <button type="submit" class="btn btn-primary" id="send">Send</button>
         </form>
         <div id="messages">
-            <div id="messagelist"></div>
+            <div id="messagelist">
+                <!--div class="message">
+                    <img src="https://proxy.mkchat.app/avatars/0.svg?b=%23a8f07a" alt="" class="avatar" />
+                    <div class="author">author<span class="badge">badge</span>
+                        <span class="timestamp">99:99 PM</span>
+                    </div>
+                    <div class="content">
+                        <p class="text">some text <span class="mention">@test</span> more text <span class="mention">#test</span></p>
+                        <p class="text"><span class="blockquote">test</span></p>
+                        <img src="https://proxy.mkchat.app/stickers/781291131828699156" alt="" class="sticker">
+                    </div>
+                </div-->
+            </div>
         </div>
     </div>
 </body>
