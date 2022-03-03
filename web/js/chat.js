@@ -1,5 +1,5 @@
 const SERVER_URL = window.location.host;
-const ws = new WebSocket(`ws://${SERVER_URL}`);
+const ws = new WebSocket(`wss://${SERVER_URL}`);
 
 ws.onopen = () => {
     logger.info("Websocket Connection Opened");
@@ -16,7 +16,7 @@ ws.onmessage = msg => {
         case "connect":
             const id = message.id;
 
-            fetch(`http://${SERVER_URL}/join/${id}?name=${params.name}&room=${params.room}`).then(res => res.text()).then(data => {
+            fetch(`https://${SERVER_URL}/join/${id}?name=${params.name}&room=${params.room}`).then(res => res.text()).then(data => {
                 if (data != "ok") return disconnect(data);
 
                 ws.send(JSON.stringify({ type: "join" }));
