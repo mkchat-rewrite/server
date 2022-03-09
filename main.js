@@ -77,7 +77,7 @@ app.ws("/*", {
                 if(channel) bot.createMessage(channel, {
                     embed: {
                         color: config.EMBED_COLORS.SUCCESS,
-                        description: `**${user.username}** has joined the chat!`
+                        description: `**${filterName(user.username)}** has joined the chat!`
                     }
                 }).catch(() => { });
 
@@ -92,7 +92,7 @@ app.ws("/*", {
                     }));
                 }).catch(() => { /* message gets eaten 😋 */ });
 
-                if (channel) bot.createMessage(channel, `**${user.username}:** ${message.text}`).catch(() => { });
+                if (channel) bot.createMessage(channel, `**${filterName(user.username)}:** ${wordFilter(removeHtml(message.text))}`).catch(() => { });
                 break;
             default:
                 break;
@@ -273,9 +273,23 @@ bot.on("ready", async () => {
 });
 
 bot.on("messageCreate", async msg => {
-    if (msg.author.id === bot.user.id) return;
+    if (msg.author.bot) return;
+
+    const room = config.ROOMS[msg.channel.id];
+    if (room) {
+        const sticker = msg.stickerItems ? msg.stickerItems[0] : null;
+        
+        app.publish(`rooms/${room}`, buildMessage({
+            author: msg.author.username,
+            text: filterMessage(msg.content) + attachmentParser(msg.attachments),
+            badge: config.MOD_IDS.includes(msg.author.id) && msg.author.id !== "908900960791834674" ? "Chat Staff" : "Discord User",
+            sticker: sticker ? getStickerUrl(sticker) : null,
+            avatar: await getAvatarUrl(msg.author)
+        }));
+    };
 
     const prefix = config.BOT_PREFIX;
+    if(!msg.content.startsWith(prefix)) return;
     const args = msg.content.slice(prefix.length).trim().split(" ");
     const cmd = args.shift().toLowerCase();
     const command = bot.commands.has(cmd) ? bot.commands.get(cmd) : bot.commands.get(bot.aliases.get(cmd));
@@ -285,19 +299,6 @@ bot.on("messageCreate", async msg => {
     } catch (err) {
         //return; // these errors shouldnt matter
     };
-
-    const room = config.ROOMS[msg.channel.id];
-    if (!room) return;
-
-    const sticker = msg.stickerItems ? msg.stickerItems[0] : null;
-    
-    app.publish(`rooms/${room}`, buildMessage({
-        author: msg.author.username,
-        text: filterMessage(msg.content) + attachmentParser(msg.attachments),
-        badge: config.MOD_IDS.includes(msg.author.id) && msg.author.id !== "908900960791834674" ? "Chat Staff" : "Discord User",
-        sticker: sticker ? getStickerUrl(sticker) : null,
-        avatar: await getAvatarUrl(msg.author)
-    }));
 });
 
 bot.on("error", err => console.error("Discord bot error: ", err));
@@ -571,7 +572,7 @@ function attachmentParser(attachments) {
     
     for (const attachment of attachments) {
         if (videoFormats.includes(attachment.url.slice(-3))) {
-            result += `<video controls autoplay><source src="${attachment.url.replace('https://cdn.discordapp.com', 'https://proxy.mkchat.app')}" style="width: ${attachment.width}px; height: ${attachment.height}px;" type=${attachment.content_type} /></video>`;
+            result += `<video controls><source src="${attachment.url.replace('https://cdn.discordapp.com', 'https://proxy.mkchat.app')}" style="width: ${attachment.width}px; height: ${attachment.height}px;" type=${attachment.content_type} /></video>`;
         } else {
             result += `<img src="${attachment.url.replace('https://cdn.discordapp.com', 'https://proxy.mkchat.app')}" alt="${attachment.filename}" style="width: ${attachment.width}px; height: ${attachment.height}px;" />`
         };
