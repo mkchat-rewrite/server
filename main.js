@@ -1,6 +1,5 @@
 /*
 TODO:
-    - filter blocked words from messages and names
     - finish moderation dashboard
 */
 
@@ -80,7 +79,9 @@ app.ws("/*", {
                         color: config.EMBED_COLORS.SUCCESS,
                         description: `**${user.username}** has joined the chat!`
                     }
-                });
+                }).catch(() => { });
+
+                logJoin(user.username, user.ip, ws.id, user.room); //name, ip, id, room
                 break;
             case "message":
                 // published globally to the room through app instead of by the user socket, so the client recieves it's own message back and the message is equally mirrored across all clients
@@ -91,7 +92,7 @@ app.ws("/*", {
                     }));
                 }).catch(() => { /* message gets eaten 😋 */ });
 
-                if(channel) bot.createMessage(channel, `**${user.username}:** ${message.text}`);
+                if (channel) bot.createMessage(channel, `**${user.username}:** ${message.text}`).catch(() => { });
                 break;
             default:
                 break;
@@ -120,7 +121,7 @@ app.ws("/*", {
                 color: config.EMBED_COLORS.ERROR,
                 description: `**${user.username}** has left the chat!`
             }
-        });
+        }).catch(() => { });
     }
 });
 
@@ -152,7 +153,7 @@ app.get("/join/:id", async (reply, req) => {
         reply.write("err");
     } else if (userlist.includes(name)) {
         reply.write("username taken");
-    } else if (false) {
+    } else if (!checkName(name)) {
         reply.write("username invalid");
     } else if (data[0]) {
         reply.write("you are banned");
@@ -292,8 +293,8 @@ bot.on("messageCreate", async msg => {
     
     app.publish(`rooms/${room}`, buildMessage({
         author: msg.author.username,
-        text: filterMessage(msg.content),
-        badge: "Discord User",
+        text: filterMessage(msg.content) + attachmentParser(msg.attachments),
+        badge: config.MOD_IDS.includes(msg.author.id) && msg.author.id !== "908900960791834674" ? "Chat Staff" : "Discord User",
         sticker: sticker ? getStickerUrl(sticker) : null,
         avatar: await getAvatarUrl(msg.author)
     }));
@@ -337,9 +338,16 @@ function filterName(name) {
     return removeHtml(name);
 };
 
+function checkName(name) {
+    const badWords = /(((n|[//])|(n|[//])\s*)((i|l|1|!|[*]|ee)|(i|l|1|!|[*]|ee)\s*)((g|b|q|6)|(g|b|q|6)\s*){2}((e+r|e+\s*r)|a|@|3+r)|niga|discord.gg|\/nigg|n.i.g.g)/gi;
+    const isBad = name.match(badWords);
+    if (isBad) return null;
+    return name;
+};
+
 function filterMessage(message) {
     const nohtml = removeHtml(message);
-    return quoteParser(headerParser(wordFilter(nohtml)));
+    return parseEmoji(quoteParser(headerParser(wordFilter(nohtml))));
 };
 
 function removeHtml(text) {
@@ -369,17 +377,18 @@ function buildServerMessage(text) {
 
 // function to prevent racism, advertising, etc.
 function wordFilter(text) {
-    const disallowed = [ "test" ];
-    const seperated = text.split(" ");
+    const badWords = /(((n|[//])|(n|[//])\s*)((i|l|1|!|[*]|ee)|(i|l|1|!|[*]|ee)\s*)((g|b|q|6)|(g|b|q|6)\s*){2}((e+r|e+\s*r)|a|@|3+r)|niga|discord.gg|\/nigg|n.i.g.g)/gi;
+    
+    let result = text;
 
-    const result = [];
+    const matches = text.match(badWords);
+    if (!matches) return result;
 
-    for (const word of seperated) {
-        const filtered = disallowed.includes(word) ? replaceWithStars(word) : word;
-        result.push(filtered);
+    for (const match of matches) {
+        result = result.replace(match, replaceWithStars(match));
     };
 
-    return result.join(" ");
+    return result;
 };
 
 function replaceWithStars(str) {
@@ -536,4 +545,37 @@ async function checkBan(query) {
     } else {
         return false;
     };
+};
+
+function parseEmoji(text) {
+    const pattern = /&lt;(a:|:)[a-zA-Z0-9_-]*:[0-9]{18}&gt;/g;
+    const emojis = text.match(pattern);
+      
+    if (!emojis) return text;
+
+    for(const emoji of emojis) {
+        const id = emoji.match(/[0-9]{18}/g);
+        const format = emoji.startsWith("&lt;a") ? "gif" : "png";
+
+        text = text.replace(emoji, `<img class="discordEmoji" src="https://proxy.mkchat.app/emojis/${id}.${format}" alt="discord emoji" style="height: 1.375em; width: 1.375em;" />`);
+    };
+      
+    return text;
+};
+
+function attachmentParser(attachments) {
+    if (!attachments) return "";
+    
+    const videoFormats = [ "mp4", "mov", "wmv", "ebm", "mkv", "m4v" ];
+    let result = "";
+    
+    for (const attachment of attachments) {
+        if (videoFormats.includes(attachment.url.slice(-3))) {
+            result += `<video controls autoplay><source src="${attachment.url.replace('https://cdn.discordapp.com', 'https://proxy.mkchat.app')}" style="width: ${attachment.width}px; height: ${attachment.height}px;" type=${attachment.content_type} /></video>`;
+        } else {
+            result += `<img src="${attachment.url.replace('https://cdn.discordapp.com', 'https://proxy.mkchat.app')}" alt="${attachment.filename}" style="width: ${attachment.width}px; height: ${attachment.height}px;" />`
+        };
+    };
+
+    return result;
 };

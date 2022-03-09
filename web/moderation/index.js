@@ -168,8 +168,12 @@ async function openBanModal(username, ip) {
     //document.getElementById("ban-modal").classList.remove("invisible");
 
     //todo: use local time of moderator to make ban date more accurate
+    const pass = localStorage.getItem("password");
 
-    const res = await fetch(`/doban?password=e&username=${username}&ip=${ip}&reason=generic&length=forever`);
+    const reason = prompt("Enter the reason for this ban: ") || "unspecified";
+    const length = prompt("Enter the length for this ban: ") || "unspecified";
+
+    const res = await fetch(`/doban?password=${pass}&username=${username}&ip=${ip}&reason=${reason}&length=${length}`);
     if (res.status != 204) return tata.error("Failed", `Cannot ban ${ip} due to reason: ${await res.text()}`);
 
     tata.success("Success", `Successfully banned: ${ip}!`);
@@ -177,8 +181,9 @@ async function openBanModal(username, ip) {
 
 async function openUnbanModal(ip) {
     //document.getElementById("unban-modal").classList.remove("invisible");
+    const pass = localStorage.getItem("password");
 
-    const res = await fetch(`/unban?password=e&ip=${ip}`);
+    const res = await fetch(`/unban?password=${pass}&ip=${ip}`);
     if (res.status != 204) return tata.error("Failed", `Cannot unban ${ip} due to reason: ${await res.text()}`);
 
     tata.success("Success", `Successfully unbanned: ${ip}!`);
