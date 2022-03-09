@@ -12,7 +12,7 @@
     "uWebSockets.js": "github:unetworking/uWebSockets.js#v20.6.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node main.js"
   },
   "keywords": [],
   "author": "",
