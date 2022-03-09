@@ -352,6 +352,8 @@ function filterMessage(message) {
 };
 
 function removeHtml(text) {
+    if (!text) return "";
+    
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/`/g, "&#x60;").replace(/\(/g, "&#40;").replace(/\)/g, "&#41;");
 };
 
