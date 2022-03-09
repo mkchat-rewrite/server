@@ -1,4 +1,4 @@
-const SERVER_URL = window.location.host;
+const SERVER_URL = "mkchat-testing.herokuapp.com";
 const ws = new WebSocket(`wss://${SERVER_URL}`);
 
 ws.onopen = () => {
