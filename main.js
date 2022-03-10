@@ -322,6 +322,8 @@ function parseQuery(queryStr) {
     const result = {};
 
     if (!queryStr) return result;
+    
+    console.log(queryStr);
 
     const items = decodeURI(queryStr).split("&");
 
