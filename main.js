@@ -92,7 +92,7 @@ app.ws("/*", {
                     }));
                 }).catch(() => { /* message gets eaten 😋 */ });
 
-                if (channel) bot.createMessage(channel, `**${filterName(user.username)}:** ${wordFilter(message.text)}`).catch(() => { });
+                if (channel) bot.createMessage(channel, `**${filterName(user.username)}:** ${wordFilter(noDiscordMentions(message.text))}`).catch(() => { });
                 break;
             default:
                 break;
@@ -587,4 +587,8 @@ function attachmentParser(attachments) {
     };
 
     return result;
+};
+
+function noDiscordMentions(text) {
+    return text ? text.replace(">", "").replace("<", "") : "";
 };
