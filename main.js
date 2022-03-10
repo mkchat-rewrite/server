@@ -340,7 +340,7 @@ function filterName(name) {
 };
 
 function checkName(name) {
-    const badWords = /(((n|[//])|(n|[//])\s*)((i|l|1|!|[*]|ee)|(i|l|1|!|[*]|ee)\s*)((g|b|q|6)|(g|b|q|6)\s*){2}((e+r|e+\s*r)|a|@|3+r)|niga|discord.gg|\/nigg|n.i.g.g)/gi;
+    const badWords = /(((n|[//])|(n|[//])\s*)((i|l|x|1|!|[*]|ee)|(i|l|x|1|!|[*]|ee)\s*)((g|b|q|6)|(g|b|q|6)\s*){2}((e+r|e+\s*r)|a|@|3+r)|niga|discord.gg|\/nigg|n.i.g.g)/gi;
     const isBad = name.match(badWords);
     if (isBad) return null;
     return name;
