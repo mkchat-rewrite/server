@@ -322,10 +322,14 @@ function parseQuery(queryStr) {
     const result = {};
 
     if (!queryStr) return result;
-    
-    console.log(queryStr);
 
-    const items = decodeURI(queryStr).split("&");
+    let items;
+
+    try {
+        items = decodeURI(queryStr).split("&");
+    } catch {
+        items = queryStr.split("&");
+    };
 
     for (const item of items) {
         const keyValue = item.split("=");
