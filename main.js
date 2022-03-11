@@ -57,7 +57,7 @@ app.ws("/*", {
         const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: user.ip });
         if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
 
-        if (data[0]) return ws.end(1, "you are banned");
+        if (Array.isArray(data) && data[0]) return ws.end(1, "you are banned");
 
         switch(message.type) {
             case "join":                
@@ -155,7 +155,7 @@ app.get("/join/:id", async (reply, req) => {
         reply.write("username taken");
     } else if (!checkName(name)) {
         reply.write("username invalid");
-    } else if (data[0]) {
+    } else if (Array.isArray(data) && data[0]) {
         reply.write("you are banned");
     } else {
         const user = {
@@ -549,7 +549,7 @@ async function checkBan(query) {
 
     if (error) {
         throw new Error(error);
-    } else if (data[0]) {
+    } else if (Array.isArray(data) && data[0]) {
         return true;
     } else {
         return false;
