@@ -1,6 +1,5 @@
 module.exports = {
     exec: (bot, message, args, config, users) => {
-        if (message.author.id !== config.ownerID) return message.channel.send("Only the bot owner can use this command!");
         if (!config.MOD_IDS.includes(message.author.id)) return bot.createMessage(message.channel.id, "You are not permitted to utilize this command!");
         if (!args) return bot.createMessage(message.channel.id, "Please enter something to evaluate.");
 
