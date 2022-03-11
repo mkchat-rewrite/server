@@ -173,6 +173,9 @@ async function openBanModal(username, ip) {
     const reason = prompt("Enter the reason for this ban: ") || "unspecified";
     const length = prompt("Enter the length for this ban: ") || "unspecified";
 
+    const isSure = confirm(`Are you sure you want to ban: ${username}?`);
+    if (!isSure) return alert("Cancelled Ban!");
+
     const res = await fetch(`/doban?password=${pass}&username=${username}&ip=${ip}&reason=${reason}&length=${length}`);
     if (res.status != 204) return tata.error("Failed", `Cannot ban ${ip} due to reason: ${await res.text()}`);
 
@@ -182,6 +185,9 @@ async function openBanModal(username, ip) {
 async function openUnbanModal(ip) {
     //document.getElementById("unban-modal").classList.remove("invisible");
     const pass = localStorage.getItem("password");
+    
+    const isSure = confirm(`Are you sure you want to unban: ${ip}?`);
+    if (!isSure) return alert("Cancelled Unban!");
 
     const res = await fetch(`/unban?password=${pass}&ip=${ip}`);
     if (res.status != 204) return tata.error("Failed", `Cannot unban ${ip} due to reason: ${await res.text()}`);
