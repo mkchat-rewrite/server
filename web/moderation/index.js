@@ -176,7 +176,7 @@ async function openBanModal(username, ip) {
     const isSure = confirm(`Are you sure you want to ban: ${username}?`);
     if (!isSure) return alert("Cancelled Ban!");
 
-    const res = await fetch(`/doban?password=${pass}&username=${username}&ip=${ip}&reason=${reason}&length=${length}`);
+    const res = await fetch(`/doban?password=${pass}&username=${username.replace("&", "")}&ip=${ip}&reason=${reason.replace("&", "and")}&length=${length}`);
     if (res.status != 204) return tata.error("Failed", `Cannot ban ${ip} due to reason: ${await res.text()}`);
 
     tata.success("Success", `Successfully banned: ${ip}!`);
