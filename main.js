@@ -14,7 +14,7 @@ const { createClient } = require("@supabase/supabase-js");
 const config = require("./config.js");
 
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
-const bot = new Eris(config.BOT_TOKEN, { intents: [ "guildMessages", "guildMembers" ] });
+const bot = new Eris(config.BOT_TOKEN, { intents: [ "guildMessages" ] });
 const app = uws.App();
 const supabase = createClient(config.DATABASE.URL, config.DATABASE.KEY);
 
