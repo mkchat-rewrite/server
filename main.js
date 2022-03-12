@@ -297,6 +297,7 @@ bot.on("messageCreate", async msg => {
     try {
         command.exec(bot, msg, args, config, users); // pass args
     } catch (err) {
+        console.log(err); // ok maybe they do matter
         //return; // these errors shouldnt matter
     };
 });
