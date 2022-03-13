@@ -77,7 +77,7 @@ app.ws("/*", {
                 if(channel) bot.createMessage(channel, {
                     embed: {
                         color: config.EMBED_COLORS.SUCCESS,
-                        description: `**${filterName(user.username)}** has joined the chat!`
+                        description: `**${user.username}** has joined the chat!`
                     }
                 }).catch(() => { });
 
@@ -92,7 +92,7 @@ app.ws("/*", {
                     }));
                 }).catch(() => { /* message gets eaten 😋 */ });
 
-                if (channel) bot.createMessage(channel, `**${filterName(user.username)}:** ${wordFilter(noDiscordMentions(message.text))}`).catch(() => { });
+                if (channel) bot.createMessage(channel, `**${user.username}:** ${wordFilter(noDiscordMentions(message.text))}`).catch(() => { });
                 break;
             default:
                 break;
