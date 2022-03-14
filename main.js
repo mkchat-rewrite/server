@@ -23,7 +23,7 @@ class UserMap extends Map {
         const result = [];
 
         for (const user of this.values()) {
-            if (user.room === room) result.push(user.username);
+            if (user.room === room) result.push(filterName(user.username));
         };
 
         return result;
@@ -67,7 +67,7 @@ app.ws("/*", {
 
                 ws.subscribe(`rooms/${room}`); // connects the client to desired room
 
-                ws.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.SUCCESS};">${user.username} has joined!</span>`));
+                ws.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.SUCCESS};">${filterName(user.username)} has joined!</span>`));
 
                 app.publish(`rooms/${room}`, JSON.stringify({
                     type: "updateusers",
@@ -87,7 +87,7 @@ app.ws("/*", {
                 // published globally to the room through app instead of by the user socket, so the client recieves it's own message back and the message is equally mirrored across all clients
                 ratelimit.consume(ws.id).then(() => {
                     app.publish(`rooms/${room}`, buildMessage({
-                        author: user.username,
+                        author: filterName(user.username),
                         text: filterMessage(message.text)
                     }));
                 }).catch(() => { /* message gets eaten 😋 */ });
@@ -108,7 +108,7 @@ app.ws("/*", {
 
         users.delete(ws.id);
 
-        app.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.ERROR};">${user.username} has left!</span>`));
+        app.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.ERROR};">${filterName(user.username)} has left!</span>`));
 
         app.publish(`rooms/${room}`, JSON.stringify({
             type: "updateusers",
@@ -134,7 +134,7 @@ app.get("/join/:id", async (reply, req) => {
     const query = parseQuery(req.getQuery());
     const room = removeHtml(query.room);
     const userlist = users.list(room);
-    const name = filterName(query.name);
+    const name = query.name;
 
     reply.onAborted(() => {
         reply.aborted = true;
