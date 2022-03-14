@@ -387,7 +387,7 @@ function buildServerMessage(text) {
 
 // function to prevent racism, advertising, etc.
 function wordFilter(text) {
-    const badWords = /(((n|[//])|(n|[//])\s*)((i|l|1|!|[*]|ee)|(i|l|1|!|[*]|ee)\s*)((g|b|q|6)|(g|b|q|6)\s*){2}((e+r|e+\s*r)|a|@|3+r)|niga|discord.gg|\/nigg|n.i.g.g)/gi;
+    const badWords = /(((n|ɴ|[//])|(n|ɴ|[//])\s*)((i|ɪ|l|x|1|!|[*]|ee)|(i|ɪ|l|x|1|!|[*]|ee)\s*)((ɢ|g|b|q|6)|(ɢ|g|b|q|6)\s*){2}((e+r|e+\s*r)|a|ᴀ|@|3+r)|niga|ɴɪɢɢᴀ|discord.gg|rule34|r34|\/nigg|n.i.g.g)/gi;
     
     let result = text;
 
