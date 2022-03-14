@@ -483,31 +483,35 @@ async function loadCommands() {
 };
 
 async function logJoin(name, ip, id, room) {
-    await fetch(config.WEBHOOK_URL, {
-        method: "POST",
-        body: JSON.stringify({
-            embeds: [{
-                "description": `**${name}** joined the chat!`,
-                "color": 0x7189FF,
-                "timestamp": new Date().toISOString(),
-                "fields": [
-                    {
-                        "name": "IP:",
-                        "value": ip
-                    },
-                    {
-                        "name": "Socket ID:",
-                        "value": id
-                    },
-                    {
-                        "name": "Room:",
-                        "value": room
-                    }
-                ]
-            }]
-        }),
-        headers: { "Content-Type": "application/json" }
-    });
+    try {
+        await fetch(config.WEBHOOK_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                embeds: [{
+                    "description": `**${name}** joined the chat!`,
+                    "color": 0x7189FF,
+                    "timestamp": new Date().toISOString(),
+                    "fields": [
+                        {
+                            "name": "IP:",
+                            "value": ip
+                        },
+                        {
+                            "name": "Socket ID:",
+                            "value": id
+                        },
+                        {
+                            "name": "Room:",
+                            "value": room
+                        }
+                    ]
+                }]
+            }),
+            headers: { "Content-Type": "application/json" }
+        });
+    } catch (err) {
+        console.log("Error logging join: ", err);
+    };
 };
 
 function getStickerUrl(sticker) {
