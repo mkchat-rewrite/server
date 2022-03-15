@@ -17,6 +17,7 @@ const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
 const bot = new Eris(config.BOT_TOKEN, { intents: [ "guildMessages" ] });
 const app = uws.App();
 const supabase = createClient(config.DATABASE.URL, config.DATABASE.KEY);
+const badWords = /(((n|ɴ|[//])|(n|ɴ|[//])\s*)((i|ɪ|l|x|1|!|[*]|ee)|(i|ɪ|l|x|1|!|[*]|ee)\s*)((ɢ|g|b|q|6)|(ɢ|g|b|q|6)\s*){2}((e+r|e+\s*r)|a|ᴀ|@|3+r)|niga|ɴɪɢɢᴀ|discord.gg|rule34|r34|\/nigg|n.i.g.g)/gi;
 
 class UserMap extends Map {
     list(room) {
@@ -147,7 +148,8 @@ app.get("/join/:id", async (reply, req) => {
     //i hate cors so much
 
     const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: ip });
-    if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
+    if (error) throw new Error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
+    // throwing because chat NEEDS to die once this happens because it's most likely important
 
     if (!users.get(id) || !ip || !name || !room) {
         reply.write("err");
@@ -178,8 +180,6 @@ app.get("/modlogin", (reply, req) => {
     const password = query.password;
 
     if (password === config.MODERATION_PASSWORD) return reply.writeStatus("204").end();
-
-    //JSON.stringify(interatorToArr(persistentUsers.values()))
     
     reply.writeStatus("418").end(); // i'm a 🫖
 });
@@ -188,7 +188,7 @@ app.get("/users", (reply, req) => {
     const query = parseQuery(req.getQuery());
     if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end();
     
-    reply.writeStatus("200").end(JSON.stringify(interatorToArr(persistentUsers.values())));
+    reply.writeStatus("200").end(JSON.stringify(iteratorToArr(persistentUsers.values())));
 });
 
 app.get("/bans", async (reply, req) => {
@@ -347,7 +347,6 @@ function filterName(name) {
 };
 
 function checkName(name) {
-    const badWords = /(((n|ɴ|[//])|(n|ɴ|[//])\s*)((i|ɪ|l|x|1|!|[*]|ee)|(i|ɪ|l|x|1|!|[*]|ee)\s*)((ɢ|g|b|q|6)|(ɢ|g|b|q|6)\s*){2}((e+r|e+\s*r)|a|ᴀ|@|3+r)|niga|ɴɪɢɢᴀ|discord.gg|rule34|r34|\/nigg|n.i.g.g)/gi;
     const isBad = name.match(badWords);
     if (isBad) return null;
     return name;
@@ -387,8 +386,6 @@ function buildServerMessage(text) {
 
 // function to prevent racism, advertising, etc.
 function wordFilter(text) {
-    const badWords = /(((n|ɴ|[//])|(n|ɴ|[//])\s*)((i|ɪ|l|x|1|!|[*]|ee)|(i|ɪ|l|x|1|!|[*]|ee)\s*)((ɢ|g|b|q|6)|(ɢ|g|b|q|6)\s*){2}((e+r|e+\s*r)|a|ᴀ|@|3+r)|niga|ɴɪɢɢᴀ|discord.gg|rule34|r34|\/nigg|n.i.g.g)/gi;
-    
     let result = text;
 
     const matches = text.match(badWords);
@@ -539,7 +536,7 @@ async function getAvatarUrl(author) {
     return `https://proxy.mkchat.app/avatars/${author.id}/${author.avatar}.${res.status === 200 ? "gif" : "webp"}`;
 };
 
-function interatorToArr(iterator) {
+function iteratorToArr(iterator) {
     const result = [];
 
     for (const item of iterator) {
