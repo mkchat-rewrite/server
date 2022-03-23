@@ -4,7 +4,8 @@ module.exports = {
     PROXY_URL: "https://proxy.mkchat.app",
     BOT_TOKEN: "NjMzMTA1NTM5MDU5OTQxMzc2.XaPHuQ.M96YqKWL-uhEQYxPRqjexZEry84",
     BOT_PREFIX: "m?",
-    WEBHOOK_URL: "https://discord.com/api/webhooks/835669251528196119/vKlakXl4BHSyutAJfzs-sKLrI_TRSumSmIrRf1lkmn-yKpZisonuL4xy2hR5iFiSBUhj",
+    JOIN_WEBHOOK_URL: "https://discord.com/api/webhooks/835669251528196119/vKlakXl4BHSyutAJfzs-sKLrI_TRSumSmIrRf1lkmn-yKpZisonuL4xy2hR5iFiSBUhj",
+    ACTION_WEBHOOK_URL: "https://discord.com/api/webhooks/952632241614389328/pk72IH7eAsxfkCxh6zQYuj4NkqZWxxr5hlCE5MlMBZDUP9yo6zJmXnchUfeUTQy5dLEv",
     MODERATION_PASSWORD: "eviternity2callithumpian8l0llygag7",
     ROOMS: {
         "575106582593929236": "main",
