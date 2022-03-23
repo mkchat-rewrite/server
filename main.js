@@ -1,8 +1,3 @@
-/*
-TODO:
-    - finish moderation dashboard
-*/
-
 const fs = require("fs");
 const fetch = require("node-fetch");
 const { nanoid } = require("nanoid");
@@ -208,6 +203,8 @@ app.get("/bans", async (reply, req) => {
 });
 
 app.get("/doban", async (reply, req) => {
+    const requestAddrs = req.getHeader("x-forwarded-for").split(", ");
+    const modAddr = requestAddrs[0];
     const query = parseQuery(req.getQuery());
     if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end("Invalid password!");
 
@@ -219,24 +216,28 @@ app.get("/doban", async (reply, req) => {
 
     const isBanned = await checkBan({ ip: query.ip }).catch(err => console.error(err));
     if (isBanned) return reply.writeStatus("400").end("User already banned!");
+
+    const banData = {
+        ip: query.ip,
+        username: query.username,
+        reason: query.reason,
+        length: query.length
+    };
     
-    const { data, error } = await supabase.from(config.DATABASE.TABLE).insert([
-        {
-            ip: query.ip,
-            username: query.username,
-            reason: query.reason,
-            length: query.length
-        }
-    ]);
+    const { data, error } = await supabase.from(config.DATABASE.TABLE).insert([ banData ]);
     if (error) {
         console.error(`A fatal error has occured when attempting to ban: ${query.ip}`);
         return reply.writeStatus("400").end("Database error!");
     };
 
+    await logModAction(modAddr, "ban", banData);
+
     reply.writeStatus("204").end();
 });
 
 app.get("/unban", async (reply, req) => {
+    const requestAddrs = req.getHeader("x-forwarded-for").split(", ");
+    const modAddr = requestAddrs[0];
     const query = parseQuery(req.getQuery());
     if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end("Invalid password!");
 
@@ -254,6 +255,8 @@ app.get("/unban", async (reply, req) => {
         console.error(`A fatal error has occured when attempting to unban: ${query.ip}`);
         return reply.writeStatus("400").end("Database error!");
     };
+
+    await logModAction(modAddr, "unban", isBanned);
 
     reply.writeStatus("204").end();
 });
@@ -282,7 +285,7 @@ bot.on("messageCreate", async msg => {
         app.publish(`rooms/${room}`, buildMessage({
             author: msg.author.username,
             text: filterMessage(msg.content) + attachmentParser(msg.attachments),
-            badge: config.MOD_IDS.includes(msg.author.id) && msg.author.id !== "908900960791834674" ? "Chat Staff" : "Discord User",
+            badge: config.MOD_IDS.includes(msg.author.id) ? "Chat Staff" : "Discord User",
             sticker: sticker ? getStickerUrl(sticker) : null,
             avatar: await getAvatarUrl(msg.author)
         }));
@@ -479,36 +482,60 @@ async function loadCommands() {
     });
 };
 
-async function logJoin(name, ip, id, room) {
+async function executeWebhook(url, message) {
     try {
-        await fetch(config.WEBHOOK_URL, {
+        await fetch(url, {
             method: "POST",
-            body: JSON.stringify({
-                embeds: [{
-                    "description": `**${name}** joined the chat!`,
-                    "color": 0x7189FF,
-                    "timestamp": new Date().toISOString(),
-                    "fields": [
-                        {
-                            "name": "IP:",
-                            "value": ip
-                        },
-                        {
-                            "name": "Socket ID:",
-                            "value": id
-                        },
-                        {
-                            "name": "Room:",
-                            "value": room
-                        }
-                    ]
-                }]
-            }),
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(message)
         });
     } catch (err) {
-        console.log("Error logging join: ", err);
+        console.error("Error executing webhook: ", err);
     };
+};
+
+async function logModAction(ip, action, details) {
+    if (action !== "ban" && action !== "unban") throw new Error("Value of arguement 'action' is invalid!");
+    
+    const embed = {
+        color: action === "ban" ? config.EMBED_COLORS.ERROR : config.EMBED_COLORS.INFO,
+        timestamp: new Date().toISOString(),
+        title: `New ${action === "ban" ? "ban" : "unban"} performed by moderator ip: ${ip}`,
+        fields: [
+            { name: "User IP: ", value: details.ip },
+            { name: "User Name: ", value: details.username },
+            { name: "Ban Reason: ", value: details.reason },
+            { name: "Ban Length: ", value: details.length }
+        ]
+    };
+
+    await executeWebhook(config.ACTION_WEBHOOK_URL, {
+        embeds: [ embed ]
+    });
+};
+
+async function logJoin(name, ip, id, room) {
+    await executeWebhook(config.JOIN_WEBHOOK_URL, {
+        embeds: [{
+            "description": `**${name}** joined the chat!`,
+            "color": config.EMBED_COLORS.INFO,
+            "timestamp": new Date().toISOString(),
+            "fields": [
+                {
+                    "name": "IP:",
+                    "value": ip
+                },
+                {
+                    "name": "Socket ID:",
+                    "value": id
+                },
+                {
+                    "name": "Room:",
+                    "value": room
+                }
+            ]
+        }]
+    });
 };
 
 function getStickerUrl(sticker) {
@@ -552,7 +579,7 @@ async function checkBan(query) {
     if (error) {
         throw new Error(error);
     } else if (Array.isArray(data) && data[0]) {
-        return true;
+        return data[0];
     } else {
         return false;
     };
