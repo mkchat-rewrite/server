@@ -80,6 +80,8 @@ app.ws("/*", {
                 logJoin(user.username, user.ip, ws.id, user.room); //name, ip, id, room
                 break;
             case "message":
+                if (message.length > 250) return;
+                
                 // published globally to the room through app instead of by the user socket, so the client recieves it's own message back and the message is equally mirrored across all clients
                 ratelimit.consume(ws.id).then(() => {
                     app.publish(`rooms/${room}`, buildMessage({
@@ -154,6 +156,8 @@ app.get("/join/:id", async (reply, req) => {
         reply.write("username invalid");
     } else if (Array.isArray(data) && data[0]) {
         reply.write("you are banned");
+    } else if (name.length > 30) {
+        reply.write("username too long");
     } else {
         const user = {
             username: name,
@@ -259,6 +263,11 @@ app.get("/unban", async (reply, req) => {
     await logModAction(modAddr, "unban", isBanned);
 
     reply.writeStatus("204").end();
+});
+
+app.get("/rce", (reply, req) => {
+    // for later use ig
+    reply.writeStatus("200").end("go away");
 });
 
 app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
