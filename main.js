@@ -12,7 +12,7 @@ const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
 const bot = new Eris(config.BOT_TOKEN, { intents: [ "guildMessages" ] });
 const app = uws.App();
 const supabase = createClient(config.DATABASE.URL, config.DATABASE.KEY);
-const badWords = /(((n|ɴ|[//])|(n|ɴ|[//])\s*)((i|ɪ|l|x|1|!|[*]|ee)|(i|ɪ|l|x|1|!|[*]|ee)\s*)((ɢ|g|b|q|6)|(ɢ|g|b|q|6)\s*){2}((e+r|e+\s*r)|a|ᴀ|@|3+r)|niga|ɴɪɢɢᴀ|discord.gg|rule34|r34|\/nigg|n.i.g.g)/gi;
+const badWords = /(((n|ɴ|[//])|(n|ɴ|[//])\s*)((i|ɪ|l|x|1|!|[*]|ee)|(i|ɪ|l|x|1|!|[*]|ee)\s*)((ɢ|g|b|q|6)|(ɢ|g|b|q|6)\s*){2}((e+r|e+\s*r)|a|ᴀ|@|3+r)|niga|ɴɪɢɢᴀ|discord.gg|teenxchat|rule34|pchat|r34|ziachat|\/nigg|n.i.g.g)/gi;
 
 class UserMap extends Map {
     list(room) {
