@@ -9,7 +9,8 @@
     "mime-types": "^2.1.34",
     "nanoid": "^3.2.0",
     "node-fetch": "^2.6.7",
-    "uWebSockets.js": "github:unetworking/uWebSockets.js#v20.6.0"
+    "uWebSockets.js": "github:unetworking/uWebSockets.js#v20.6.0",
+    "lite-meta-scraper": "^1.0.5"
   },
   "scripts": {
     "start": "node main.js"
