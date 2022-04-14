@@ -295,7 +295,7 @@ bot.on("messageCreate", async msg => {
         
         app.publish(`rooms/${room}`, buildMessage({
             author: msg.author.username,
-            text: filterMessage(msg.content) + attachmentParser(msg.attachments) + parseGif(msg.content),
+            text: await parseGif(filterMessage(msg.content)) + attachmentParser(msg.attachments),
             badge: config.MOD_IDS.includes(msg.author.id) ? "Chat Staff" : "Discord User",
             sticker: sticker ? getStickerUrl(sticker) : null,
             avatar: await getAvatarUrl(msg.author)
@@ -646,7 +646,7 @@ function parseGif(messageContent) {
             path: tenorGifUrl.replace("https://tenor.com", "")
         }).scrape((err, data) => {
             if (err || !data?.ogUrl) res(""); // stupid but idc
-            res(`<img src="${data.ogUrl}" alt="tenor gif" style="width: ${data.ogImageWidth}px; height: ${data.ogImageHeight}px;" />`);
+            res(messageContent.replace(tenorGifUrl, `<img src="${data.ogUrl}" alt="tenor gif" style="width: ${data.ogImageWidth}px; height: ${data.ogImageHeight}px;" />`));
         });
     });
 };
