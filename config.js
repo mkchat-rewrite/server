@@ -2,26 +2,26 @@ module.exports = {
     PORT: process.env.PORT || 3000,
     HOST: process.env.HOST || "0.0.0.0",
     PROXY_URL: "https://proxy.mkchat.app",
-    BOT_TOKEN: "NjMzMTA1NTM5MDU5OTQxMzc2.XaPHuQ.M96YqKWL-uhEQYxPRqjexZEry84",
+    BOT_TOKEN: "OTQ1NDU5MDkwNzIzODMxODI4.YhQdZQ.8uOLLl55QU5vZtwOUENpJh5mmP0",
     BOT_PREFIX: "m?",
     JOIN_WEBHOOK_URL: "https://discord.com/api/webhooks/835669251528196119/vKlakXl4BHSyutAJfzs-sKLrI_TRSumSmIrRf1lkmn-yKpZisonuL4xy2hR5iFiSBUhj",
     ACTION_WEBHOOK_URL: "https://discord.com/api/webhooks/952632241614389328/pk72IH7eAsxfkCxh6zQYuj4NkqZWxxr5hlCE5MlMBZDUP9yo6zJmXnchUfeUTQy5dLEv",
     MODERATION_PASSWORD: "eviternity2callithumpian8l0llygag7",
     ROOMS: {
-        "575106582593929236": "main",
-        "698007321829179453": "main2",
-        "698007976148992140": "chill",
-        "697031279107112980": "mks-room",
-        "698049799454457877": "gaming",
-        "698050362275397643": "rp"
+        "945461992439808030": "main",
+        "945462013323264030": "main2",
+        "945462143610920970": "chill",
+        "945462118839369769": "mks-room",
+        "945462043325108265": "gaming",
+        "945462162523045938": "rp"
     },
     CHANNELS: {
-        "main": "575106582593929236",
-        "main2": "698007321829179453",
-        "chill": "698007976148992140",
-        "mks-room": "697031279107112980",
-        "gaming": "698049799454457877",
-        "rp": "698050362275397643"
+        "main": "945461992439808030",
+        "main2": "945462013323264030",
+        "chill": "945462143610920970",
+        "mks-room": "945462118839369769",
+        "gaming": "945462043325108265",
+        "rp": "945462162523045938"
     },
     MOD_IDS: [
         "908900960791834674",
