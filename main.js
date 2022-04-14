@@ -636,7 +636,7 @@ function noDiscordMentions(text) {
 function parseGif(messageContent) {
     const tenorGifUrlRegex = /https:\/\/tenor.com\/view\/[\S]+/g;
 
-    if (!tenorGifUrlRegex.test(messageContent)) return "";
+    if (!tenorGifUrlRegex.test(messageContent)) return messageContent;
 
     return new Promise((res, _rej) => {
         const tenorGifUrl = messageContent.match(tenorGifUrlRegex)[0];
@@ -645,7 +645,7 @@ function parseGif(messageContent) {
             host: "https://tenor.com",
             path: tenorGifUrl.replace("https://tenor.com", "")
         }).scrape((err, data) => {
-            if (err || !data?.ogUrl) res(""); // stupid but idc
+            if (err || !data?.ogUrl) res(messageContent); // stupid but idc
             res(messageContent.replace(tenorGifUrl, `<img src="${data.ogUrl}" alt="tenor gif" style="width: ${data.ogImageWidth}px; height: ${data.ogImageHeight}px;" />`));
         });
     });
