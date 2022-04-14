@@ -6,6 +6,7 @@ const { FastRateLimit } = require("fast-ratelimit");
 const Eris = require("eris");
 const uws = require("uWebSockets.js");
 const { createClient } = require("@supabase/supabase-js");
+import Scraper from "lite-meta-scraper";
 const config = require("./config.js");
 
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
