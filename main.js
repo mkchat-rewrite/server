@@ -60,7 +60,11 @@ app.ws("/*", {
             case "join":                
                 if (!(user.username || user.ip || user.room)) return ws.end(1, "invalid join data"); // incase the join http request from client fails for whatever reason, todo: find out why client doesnt receive close message
 
-                ws.send(buildServerMessage(`Welcome to room: ${room}`));
+                try {
+                    ws.send(buildServerMessage(`Welcome to room: ${room}`));
+                } catch {
+                    return ws.end("Too many requests");
+                };
 
                 ws.subscribe(`rooms/${room}`); // connects the client to desired room
 
