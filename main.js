@@ -63,7 +63,7 @@ app.ws("/*", {
                 try {
                     ws.send(buildServerMessage(`Welcome to room: ${room}`));
                 } catch {
-                    return ws.end("Too many requests");
+                    return; // ahhhhhh
                 };
 
                 ws.subscribe(`rooms/${room}`); // connects the client to desired room
