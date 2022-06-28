@@ -1,44 +1,14 @@
-module.exports = {
-    exec: (bot, message, args, config, users) => {
-        if (!config.MOD_IDS.includes(message.author.id)) return bot.createMessage(message.channel.id, "You are not permitted to utilize this command!");
-        if (!args) return bot.createMessage(message.channel.id, "Please enter something to evaluate.");
+import { sendMessage } from "discordeno";
 
-        if (args.join(" ").toLowerCase().includes("token")) return;
-
-        const toEval = args.join(" ");
-        const evaluated = eval(toEval);
-      
-        bot.createMessage(message.channel.id, {
-            embed: {
-                title: "Eval",
-                color: config.EMBED_COLORS.INFO,
-                fields: [
-                    {
-                        name: "To evaluate:",
-                        value: `\`\`\`js\n${args.join(" ")}\n\`\`\``,
-                        inline: true
-                    },
-                    {
-                        name: "Evaluated:",
-                        value: `\`\`\`js\n${evaluated}\n\`\`\``,
-                        inline: false
-                    },
-                    {
-                        name: "Type of:",
-                        value: typeof(evaluated),
-                        inline: false
-                    }
-                ],
-                footer: {
-                    text: "MKChat Bot",
-                    icon_url: bot.user.avatarURL
-                }
-            }
-        });
+export default {
+    exec: async (bot, message, _args, _config, users) => {
+        // bot.createMessage(message.channel.id, "pong");
+        sendMessage(bot, message.channelId, { content: "pong" });
     },
     meta: {
-        name: "eval",
-        aliases: [],
-        description: "Evaluates code."
+        name: "ping",
+        aliases: [ "pong" ],
+        description: "Pings and pongs.",
+        restricted: false
     }
 };

@@ -1,10 +1,13 @@
-module.exports = {
-    exec: (bot, message, args, config, users) => {
-        bot.createMessage(message.channel.id, "pong");
+import { sendMessage } from "discordeno";
+
+export default {
+    exec: async (bot, message, _args, _config, users) => {
+        sendMessage(bot, message.channelId, { content: "pong" });
     },
     meta: {
         name: "ping",
         aliases: [ "pong" ],
-        description: "Simple ping command."
+        description: "Pings and pongs.",
+        restricted: false
     }
 };

@@ -1,35 +1,30 @@
-module.exports = {
+export default Object.freeze({
+    TOKEN: "OTkxMDU4OTY0NTkyNjE1NDk0.GTU5lJ.u8lCnPz2cjCA8_e3ztKKj-AaHZ3thEGrxop3rA",
     PORT: process.env.PORT || 3000,
     HOST: process.env.HOST || "0.0.0.0",
     PROXY_URL: "https://proxy.mkchat.app",
-    BOT_TOKEN: "OTQ1NDU5MDkwNzIzODMxODI4.YhQdZQ.8uOLLl55QU5vZtwOUENpJh5mmP0",
     BOT_PREFIX: "m?",
-    JOIN_WEBHOOK_URL: "https://discord.com/api/webhooks/835669251528196119/vKlakXl4BHSyutAJfzs-sKLrI_TRSumSmIrRf1lkmn-yKpZisonuL4xy2hR5iFiSBUhj",
-    ACTION_WEBHOOK_URL: "https://discord.com/api/webhooks/952632241614389328/pk72IH7eAsxfkCxh6zQYuj4NkqZWxxr5hlCE5MlMBZDUP9yo6zJmXnchUfeUTQy5dLEv",
+    JOIN_WEBHOOK_URL: "https://discord.com/api/webhooks/991068364648628234/kSUVEGyGaRr8oytbbtEFJNAq8ISdaF-f8M_YKaqMvV32LZ-ivwGWv2ATobOBK0-3MrQO",
+    ACTION_WEBHOOK_URL: "https://discord.com/api/webhooks/991068566021341185/Xv4alF0JL6vK8ayyU09LAZY8gi2gZjWI5JqXgcYi-ApCye7Yj7_4cQQKZvNJ0wLG13RO",
     MODERATION_PASSWORD: "eviternity2callithumpian8l0llygag7",
     ROOMS: {
-        "945461992439808030": "main",
-        "945462013323264030": "main2",
-        "945462143610920970": "chill",
-        "945462118839369769": "mks-room",
-        "945462043325108265": "gaming",
-        "945462162523045938": "rp"
+        "991040161141895238": "main",
+        "991040184638394418": "main2",
+        "991040217899233402": "chill",
+        "991040263591964682": "gaming",
+        "991040289730867250": "rp"
     },
     CHANNELS: {
-        "main": "945461992439808030",
-        "main2": "945462013323264030",
-        "chill": "945462143610920970",
-        "mks-room": "945462118839369769",
-        "gaming": "945462043325108265",
-        "rp": "945462162523045938"
+        "main": "991040161141895238",
+        "main2": "991040184638394418",
+        "chill": "991040217899233402",
+        "gaming": "991040263591964682",
+        "rp": "991040289730867250"
     },
     MOD_IDS: [
-        "908900960791834674",
-        "198439918647771136",
-        "562424110089764914",
-        "644811269123211272",
-        "555892702844157972",
-        "172664698091601920"
+        908900960791834674n,
+        198439918647771136n,
+        644811269123211272n
     ],
     EMBED_COLORS: {
         INFO: 0x449cf8,
@@ -41,9 +36,19 @@ module.exports = {
         SUCCESS: "#00C059",
         ERROR: "#FF3333"
     },
+    ROLE_IDS: {
+        MODERATION: 991042137799921707n,
+        CHAT_USER: 991068852026753054n,
+        CHAT_BAN: 991069045283508274n,
+        CHAT_PING: 966149524202594335n
+    },
+    ROLE_REACTION: {
+        MESSAGE_ID: 966183622862315530n,
+        EMOJI_ID: 966136524649410571n
+    },
     DATABASE: {
         URL: "https://oyzzthycfrqozzbmcjry.supabase.co",
         KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95enp0aHljZnJxb3p6Ym1janJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDYxNzIzNTEsImV4cCI6MTk2MTc0ODM1MX0.uQ8FBwH0EKZ7RyMgOQs7vAVJhXL0txDBoLe4IZTcIRo",
         TABLE: "bans"
     }
-};
+});

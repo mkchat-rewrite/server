@@ -1,16 +1,15 @@
-const fs = require("fs");
-const fetch = require("node-fetch");
-const { nanoid } = require("nanoid");
-const mime = require("mime-types");
-const { FastRateLimit } = require("fast-ratelimit");
-const Eris = require("eris");
-const uws = require("uWebSockets.js");
-const { createClient } = require("@supabase/supabase-js");
-const Scraper = require("lite-meta-scraper");
-const config = require("./config.js");
+import fs from "fs/promises";
+import uws from "uWebSockets.js";
+import { startBot, createBot, sendMessage, addRole, removeRole, getMember, getUser, avatarURL, Intents } from "discordeno";
+import Scraper from "lite-meta-scraper";
+import mime from "mime-types";
+import { fetch } from "undici";
+import { nanoid } from "nanoid";
+import { FastRateLimit } from "fast-ratelimit";
+import { createClient } from "@supabase/supabase-js";
+import config from "./config.js";
 
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
-const bot = new Eris(config.BOT_TOKEN, { intents: [ "guildMessages" ] });
 const app = uws.App();
 const supabase = createClient(config.DATABASE.URL, config.DATABASE.KEY);
 const badWords = /(((n|ɴ|[//])|(n|ɴ|[//])\s*)((i|ɪ|l|x|1|!|[*]|ee)|(i|ɪ|l|x|1|!|[*]|ee)\s*)((ɢ|g|b|q|6)|(ɢ|g|b|q|6)\s*){2}((e+r|e+\s*r)|a|ᴀ|@|3+r)|niga|ɴɪɢɢᴀ|discord.gg|teenxchat|rule34|pchat|r34|ziachat|\/nigg|n.i.g.g)/gi;
@@ -29,6 +28,69 @@ class UserMap extends Map {
 
 const users = new UserMap();
 const persistentUsers = new UserMap();
+
+const bot = createBot({
+    token: config.TOKEN,
+    intents: Intents.Guilds | Intents.GuildMessages | Intents.MessageContent | Intents.GuildMessageReactions,
+    events: {
+        async ready() {
+            console.log("Ahh i'm alive! Please do not end the process for I will cease to exist.");
+
+            try {
+                [ bot.commands, bot.aliases ] = await loadCommands();
+            } catch (err) {
+                console.error(err);
+            };
+        },
+        async messageCreate(bot, message) {
+            if (message.isBot) return;
+
+            const room = fetchRoom(message.channelId);//config.ROOMS[message.channelId];
+            if (room) {
+                const sticker = message.stickerItems ? message.stickerItems[0] : null;
+
+                const user = await getUser(bot, message.authorId);
+                
+                // gif parsing broken rn :(
+
+                app.publish(`rooms/${room}`, buildMessage({
+                    author: user.username,
+                    text: await parseGif(filterMessage(message.content)) + attachmentParser(message.attachments),
+                    badge: config.MOD_IDS.includes(message.authorId) ? "Chat Staff" : "Discord User",
+                    sticker: sticker ? getStickerUrl(sticker) : null,
+                    avatar: await getAvatarUrl(user)
+                }));
+            };
+
+            const prefix = "m?";
+            if (!message.content.startsWith(prefix)) return;
+            
+            const args = message.content.slice(prefix.length).trim().split(" ");
+            const cmd = args.shift().toLowerCase();
+            const command = bot.commands.has(cmd) ? bot.commands.get(cmd) : bot.commands.get(bot.aliases.get(cmd));
+        
+            try {
+                if (command.meta.restricted && !message.member.roles.includes(config.ROLE_IDS.MODERATION)) throw new Error("You do not have the required permission to use this command!");
+
+                if (command) await command.exec(bot, message, args, config, users);
+            } catch (err) {
+                sendMessage(bot, message.channelId, {
+                    embeds: [{
+                        title: ":x: Something went wrong! :x:",
+                        description: `\`\`\`js\n${err}\n\`\`\``,
+                        color: config.EMBED_COLORS.ERROR
+                    }]
+                });
+            };
+        },
+        async reactionAdd(bot, { userId, messageId, guildId, emoji }) {
+            if (messageId === config.ROLE_REACTION.MESSAGE_ID && emoji.id === config.ROLE_REACTION.EMOJI_ID) addRole(bot, guildId, userId, config.ROLE_IDS.CHAT_PING);
+        },
+        async reactionRemove(bot, { userId, messageId, guildId, emoji }) {
+            if (messageId === config.ROLE_REACTION.MESSAGE_ID && emoji.id === config.ROLE_REACTION.EMOJI_ID) removeRole(bot, guildId, userId, config.ROLE_IDS.CHAT_PING);
+        }
+    }
+});
 
 app.ws("/*", {
     idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason every 2 minutes
@@ -75,12 +137,12 @@ app.ws("/*", {
                     users: users.list(room)
                 }));
 
-                if(channel) bot.createMessage(channel, {
-                    embed: {
+                if (channel) await sendMessage(bot, channel, {
+                    embeds: [{
                         color: config.EMBED_COLORS.SUCCESS,
                         description: `**${user.username}** has joined the chat!`
-                    }
-                }).catch(() => { });
+                    }]
+                });
 
                 logJoin(user.username, user.ip, ws.id, user.room); //name, ip, id, room
                 break;
@@ -95,7 +157,7 @@ app.ws("/*", {
                     }));
                 }).catch(() => { /* message gets eaten 😋 */ });
 
-                if (channel) bot.createMessage(channel, `**${user.username}:** ${wordFilter(noDiscordMentions(message.text))}`).catch(() => { });
+                if (channel) await sendMessage(bot, channel, { content: `**${user.username}:** ${wordFilter(noDiscordMentions(message.text))}` });
                 break;
             default:
                 break;
@@ -105,7 +167,7 @@ app.ws("/*", {
         console.log(`WebSocket backpressure: ${ws.getBufferedAmount()}`);
         // not handling backpressue because im lazy lmfao
     },
-    close: (ws, _code, _msg) => {
+    close: async (ws, _code, _msg) => {
         const user = users.get(ws.id);
         const room = user.room;
 
@@ -119,12 +181,12 @@ app.ws("/*", {
         }));
 
         const channel = config.CHANNELS[room];
-        if(channel) bot.createMessage(channel, {
-            embed: {
+        if (channel) await sendMessage(bot, channel, {
+            embeds: [{
                 color: config.EMBED_COLORS.ERROR,
                 description: `**${user.username}** has left the chat!`
-            }
-        }).catch(() => { });
+            }]
+        });
     }
 });
 
@@ -278,51 +340,7 @@ app.get("/rce", (reply, req) => {
 
 app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
 
-bot.on("ready", async () => {
-    console.log(`${bot.user.username} online!`);
-
-    try {
-        [ bot.commands, bot.aliases ] = await loadCommands();
-    } catch (err) {
-        console.error(err);
-    };
-
-    console.log("Loaded discord bot commands.");
-});
-
-bot.on("messageCreate", async msg => {
-    if (msg.author.bot) return;
-
-    const room = config.ROOMS[msg.channel.id];
-    if (room) {
-        const sticker = msg.stickerItems ? msg.stickerItems[0] : null;
-        
-        app.publish(`rooms/${room}`, buildMessage({
-            author: msg.author.username,
-            text: await parseGif(filterMessage(msg.content)) + attachmentParser(msg.attachments),
-            badge: config.MOD_IDS.includes(msg.author.id) ? "Chat Staff" : "Discord User",
-            sticker: sticker ? getStickerUrl(sticker) : null,
-            avatar: await getAvatarUrl(msg.author)
-        }));
-    };
-
-    const prefix = config.BOT_PREFIX;
-    if(!msg.content.startsWith(prefix)) return;
-    const args = msg.content.slice(prefix.length).trim().split(" ");
-    const cmd = args.shift().toLowerCase();
-    const command = bot.commands.has(cmd) ? bot.commands.get(cmd) : bot.commands.get(bot.aliases.get(cmd));
-
-    try {
-        command.exec(bot, msg, args, config, users); // pass args
-    } catch (err) {
-        console.log(err); // ok maybe they do matter
-        //return; // these errors shouldnt matter
-    };
-});
-
-bot.on("error", err => console.error("Discord bot error: ", err));
-
-bot.connect();
+await startBot(bot);
 
 function abToStr(buf) {
     return Buffer.from(buf).toString("utf8");
@@ -445,58 +463,6 @@ function quoteParser(text) {
     return `${text.replace("&gt;", "<span class='blockquote'>")}</span>`;
 };
 
-// folder name supplied should have no slashes (unless subfolder ex. folder/subfolder)
-function registerWebAssets(folder) {        
-    const files = fs.readdirSync(folder);
-
-    for (const file of files) {
-        if (!file.includes(".")) {
-            registerWebAssets(`./${folder}/${file}`);
-            continue;
-        };
-
-        const data = fs.readFileSync(`./${folder}/${file}`);
-
-        const prefix = folder.replace(/(.\/web|web)/, ""); // hardcoding this makes passing folder name as param useless, but who cares
-        const mimeType = mime.lookup(file);
-
-        app.get(`${prefix}/${file}`, (reply, _req) => {
-            reply.writeHeader("Content-Type", mimeType).end(data);
-        });
-        
-        if (file != "index.html") continue;
-
-        app.get(prefix || "/", (reply, _req) => {
-            reply.writeHeader("Content-Type", mimeType).end(data);
-        });
-
-        app.get(`${prefix}/`, (reply, _req) => {
-            reply.writeHeader("Content-Type", mimeType).end(data);
-        });
-    };
-};
-
-async function loadCommands() {
-    const commands = new Map(), aliases = new Map();
-
-    return new Promise((res, rej) => {
-        fs.readdir("./commands", (err, files) => {            
-            const commandFiles = files.filter(f => f.endsWith(".js"));
-            if (err) rej(err);
-
-            for (const file of commandFiles) {
-                const cmd = require(`./commands/${file}`);
-
-                commands.set(cmd.meta.name, cmd);
-                for (const alias of cmd.meta.aliases) {
-                    aliases.set(alias, cmd.meta.name);
-                };
-            };
-            res([ commands, aliases ]);
-        });
-    });
-};
-
 async function executeWebhook(url, message) {
     try {
         await fetch(url, {
@@ -555,10 +521,10 @@ async function logJoin(name, ip, id, room) {
 
 function getStickerUrl(sticker) {
     const result = {
-        type: sticker.format_type < 3 ? 1 : 2
+        type: sticker.formatType < 3 ? 1 : 2
     };
 
-    switch(sticker.format_type) {
+    switch(sticker.formatType) {
         case 1:
             result.url = `https://proxy.mkchat.app/stickers/${sticker.id}.webp`;
             break;
@@ -574,8 +540,14 @@ function getStickerUrl(sticker) {
 };
 
 async function getAvatarUrl(author) {
-    const res = await fetch(`https://proxy.mkchat.app/avatars/${author.id}/${author.avatar}.gif`);
-    return `https://proxy.mkchat.app/avatars/${author.id}/${author.avatar}.${res.status === 200 ? "gif" : "webp"}`;
+    const discordAv = await avatarURL(bot, author.id, author.discriminator, {
+        avatar: author.avatar,
+        format: "png"
+    });
+    const avatarId = discordAv.split("/")[5].split(".png")[0];
+
+    const res = await fetch(`https://proxy.mkchat.app/avatars/${author.id}/${avatarId}.gif`);
+    return `https://proxy.mkchat.app/avatars/${author.id}/${avatarId}.${res.status === 200 ? "gif" : "webp"}`;
 };
 
 function iteratorToArr(iterator) {
@@ -653,4 +625,68 @@ function parseGif(messageContent) {
             res(messageContent.replace(tenorGifUrl, `<img src="${data.ogUrl}" alt="tenor gif" style="width: ${data.ogImageWidth}px; height: ${data.ogImageHeight}px;" />`));
         });
     });
+};
+
+function loadCommands() {
+    const commands = new Map(), aliases = new Map();
+
+    return new Promise(async (res, _rej) => {
+        const files = (await fs.readdir("./commands")).filter(f => f.endsWith(".js"));
+
+        for (const file of files) {
+            const { default: cmd } = await import(`./commands/${file}`);
+
+            commands.set(cmd.meta.name, cmd);
+            for (const alias of cmd.meta.aliases) {
+                aliases.set(alias, cmd.meta.name);
+            };
+        };
+
+        res([ commands, aliases ]);
+    });
+};
+
+async function hasRole(bot, guildId, userId, roleId) {
+    return (await getMember(bot, guildId, userId)).roles.includes(roleId);
+};
+
+// folder name supplied should have no slashes (unless subfolder ex. folder/subfolder)
+async function registerWebAssets(folder) {        
+    const files = await fs.readdir(folder);
+
+    for (const file of files) {
+        if (!file.includes(".")) {
+            registerWebAssets(`./${folder}/${file}`);
+            continue;
+        };
+
+        const data = await fs.readFile(`./${folder}/${file}`);
+
+        const prefix = folder.replace(/(.\/web|web)/, ""); // hardcoding this makes passing folder name as param useless, but who cares
+        const mimeType = mime.lookup(file);
+
+        app.get(`${prefix}/${file}`, (reply, _req) => {
+            reply.writeHeader("Content-Type", mimeType).end(data);
+        });
+        
+        if (file !== "index.html") continue;
+
+        app.get(prefix || "/", (reply, _req) => {
+            reply.writeHeader("Content-Type", mimeType).end(data);
+        });
+
+        app.get(`${prefix}/`, (reply, _req) => {
+            reply.writeHeader("Content-Type", mimeType).end(data);
+        });
+    };
+};
+
+function fetchRoom(channelId) {
+    const rooms = config.ROOMS;
+
+    for (const room in rooms) {
+        if (BigInt(room) === channelId) return rooms[room];
+    };
+
+    return null;
 };

@@ -1,3 +1,5 @@
+const SERVER_URL = window.location.host;
+
 window.onload = async () => {
     const pass = localStorage.getItem("password");
     await login(pass);
@@ -30,7 +32,7 @@ loginEl.onsubmit = async e => {
 };
 
 async function login(password) {
-    const res = await fetch(`/modlogin?password=${password}`);
+    const res = await fetch(`https://${SERVER_URL}/modlogin?password=${password}`);
 
     if (res.status === 204) {
         localStorage.setItem("password", password);
@@ -45,7 +47,7 @@ async function login(password) {
 };
 
 async function loadUsers(password) {
-    const res = await fetch(`/users?password=${password}`);
+    const res = await fetch(`https://${SERVER_URL}/users?password=${password}`);
     const users = await res.json();
 
     const data = document.getElementById("data");
@@ -96,7 +98,7 @@ async function loadUsers(password) {
 };
 
 async function loadBans(password) {
-    const res = await fetch(`/bans?password=${password}`);
+    const res = await fetch(`https://${SERVER_URL}/bans?password=${password}`);
     const bans = await res.json();
 
     const data = document.getElementById("data");
@@ -176,7 +178,7 @@ async function openBanModal(username, ip) {
     const isSure = confirm(`Are you sure you want to ban: ${username}?`);
     if (!isSure) return alert("Cancelled Ban!");
 
-    const res = await fetch(`/doban?password=${pass}&username=${username.replace("&", "")}&ip=${ip}&reason=${reason.replace("&", "and")}&length=${length}`);
+    const res = await fetch(`https://${SERVER_URL}/doban?password=${pass}&username=${username.replace("&", "")}&ip=${ip}&reason=${reason.replace("&", "and")}&length=${length}`);
     if (res.status != 204) return tata.error("Failed", `Cannot ban ${ip} due to reason: ${await res.text()}`);
 
     tata.success("Success", `Successfully banned: ${ip}!`);
@@ -189,7 +191,7 @@ async function openUnbanModal(ip) {
     const isSure = confirm(`Are you sure you want to unban: ${ip}?`);
     if (!isSure) return alert("Cancelled Unban!");
 
-    const res = await fetch(`/unban?password=${pass}&ip=${ip}`);
+    const res = await fetch(`https://${SERVER_URL}/unban?password=${pass}&ip=${ip}`);
     if (res.status != 204) return tata.error("Failed", `Cannot unban ${ip} due to reason: ${await res.text()}`);
 
     tata.success("Success", `Successfully unbanned: ${ip}!`);

@@ -1,22 +1,21 @@
 {
-  "name": "considerableharmoniousproperties",
+  "name": "mkchat",
   "version": "1.0.0",
   "main": "main.js",
-  "dependencies": {
-    "@supabase/supabase-js": "^1.30.7",
-    "eris": "^0.16.1",
-    "fast-ratelimit": "^3.0.0",
-    "mime-types": "^2.1.34",
-    "nanoid": "^3.2.0",
-    "node-fetch": "^2.6.7",
-    "uWebSockets.js": "github:unetworking/uWebSockets.js#v20.6.0",
-    "lite-meta-scraper": "^1.0.5"
-  },
+  "type": "module",
   "scripts": {
-    "start": "node main.js"
+    "start": "node main.js",
+    "dev": "nodemon main.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "author": "Created by themkdev, rewritten by distrust",
+  "dependencies": {
+    "discordeno": "^13.0.0-rc35",
+    "lite-meta-scraper": "^1.0.5",
+    "mime-types": "^2.1.35",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.10.0",
+    "@supabase/supabase-js": "^1.30.7",
+    "fast-ratelimit": "^3.0.0",
+    "nanoid": "^3.2.0",
+    "undici": "^5.5.1"
+  }
 }
