@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import uws from "uWebSockets.js";
-import { startBot, createBot, sendMessage, addRole, removeRole, getMember, avatarURL, Intents } from "discordeno";
+import { startBot, createBot, sendMessage, addRole, removeRole, getUser, avatarURL, Intents } from "discordeno";
 import Scraper from "lite-meta-scraper";
 import mime from "mime-types";
 import { fetch } from "undici";
@@ -656,9 +656,9 @@ function loadCommands() {
     });
 };
 
-async function hasRole(bot, guildId, userId, roleId) {
-    return (await getMember(bot, guildId, userId)).roles.includes(roleId);
-};
+// async function hasRole(bot, guildId, userId, roleId) {
+//     return (await getMember(bot, guildId, userId)).roles.includes(roleId);
+// };
 
 // folder name supplied should have no slashes (unless subfolder ex. folder/subfolder)
 async function registerWebAssets(folder) {        
