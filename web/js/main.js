@@ -1,7 +1,12 @@
 (async () => {
-    const res = await fetch("//motd.mkchat.app/");
-    const data = await res.text();
-    document.getElementById("motd").innerHTML = data;
+    let motd;
+    try {
+        const res = await fetch("//motd.mkchat.app/");
+        motd = await res.text();
+    } catch {
+        motd = "<3";
+    };
+    document.getElementById("motd").innerHTML = motd;
 })();
 
 const searchParams = new URLSearchParams(window.location.search);

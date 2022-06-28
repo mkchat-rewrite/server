@@ -82,20 +82,12 @@ const bot = createBot({
             };
         },
         async reactionAdd(bot, { userId, messageId, guildId, emoji }) {
-            // if (messageId === config.ROLE_REACTION.MESSAGE_ID && emoji.id === config.ROLE_REACTION.EMOJI_ID) addRole(bot, guildId, userId, config.ROLE_IDS.CHAT_PING);
-            console.log(messageId, emoji.id);
             for (const entry of config.ROLE_REACTIONS) {
-                console.log(entry.roleId, emoji.id);
-                console.log(messageId, entry.messageId);
                 if (messageId === entry.messageId && emoji.id === entry.emojiId) addRole(bot, guildId, userId, entry.roleId);
             };
         },
         async reactionRemove(bot, { userId, messageId, guildId, emoji }) {
-            // if (messageId === config.ROLE_REACTION.MESSAGE_ID && emoji.id === config.ROLE_REACTION.EMOJI_ID) removeRole(bot, guildId, userId, config.ROLE_IDS.CHAT_PING);
-            console.log(messageId, emoji.id);
             for (const entry of config.ROLE_REACTIONS) {
-                console.log(entry.roleId, emoji.id);
-                console.log(messageId, entry.messageId);
                 if (messageId === entry.messageId && emoji.id === entry.emojiId) removeRole(bot, guildId, userId, entry.roleId);
             };
         }
