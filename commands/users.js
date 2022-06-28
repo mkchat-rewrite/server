@@ -13,6 +13,6 @@ export default {
         name: "users",
         aliases: [ ],
         description: "Shows the number of users currently connected to mkchat.",
-        restricted: true
+        restricted: false
     }
 };
