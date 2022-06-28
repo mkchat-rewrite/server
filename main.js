@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import uws from "uWebSockets.js";
-import { startBot, createBot, sendMessage, addRole, removeRole, getMember, getUser, avatarURL, Intents } from "discordeno";
+import { startBot, createBot, sendMessage, addRole, removeRole, getMember, avatarURL, Intents } from "discordeno";
 import Scraper from "lite-meta-scraper";
 import mime from "mime-types";
 import { fetch } from "undici";
@@ -50,8 +50,6 @@ const bot = createBot({
                 const sticker = message.stickerItems ? message.stickerItems[0] : null;
 
                 const user = await getUser(bot, message.authorId);
-                
-                // gif parsing broken rn :(
 
                 app.publish(`rooms/${room}`, buildMessage({
                     author: user.username,
@@ -84,10 +82,16 @@ const bot = createBot({
             };
         },
         async reactionAdd(bot, { userId, messageId, guildId, emoji }) {
-            if (messageId === config.ROLE_REACTION.MESSAGE_ID && emoji.id === config.ROLE_REACTION.EMOJI_ID) addRole(bot, guildId, userId, config.ROLE_IDS.CHAT_PING);
+            // if (messageId === config.ROLE_REACTION.MESSAGE_ID && emoji.id === config.ROLE_REACTION.EMOJI_ID) addRole(bot, guildId, userId, config.ROLE_IDS.CHAT_PING);
+            for (const entry of config.ROLE_REACTIONS) {
+                if (messageId === entry.messageId && emoji.id === entry.emojiId) addRole(bot, guildId, userId, entry.roleId);
+            };
         },
         async reactionRemove(bot, { userId, messageId, guildId, emoji }) {
-            if (messageId === config.ROLE_REACTION.MESSAGE_ID && emoji.id === config.ROLE_REACTION.EMOJI_ID) removeRole(bot, guildId, userId, config.ROLE_IDS.CHAT_PING);
+            // if (messageId === config.ROLE_REACTION.MESSAGE_ID && emoji.id === config.ROLE_REACTION.EMOJI_ID) removeRole(bot, guildId, userId, config.ROLE_IDS.CHAT_PING);
+            for (const entry of config.ROLE_REACTIONS) {
+                if (messageId === entry.messageId && emoji.id === entry.emojiId) removeRole(bot, guildId, userId, entry.roleId);
+            };
         }
     }
 });

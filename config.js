@@ -42,10 +42,18 @@ export default Object.freeze({
         CHAT_BAN: 991069045283508274n,
         CHAT_PING: 966149524202594335n
     },
-    ROLE_REACTION: {
-        MESSAGE_ID: 966183622862315530n,
-        EMOJI_ID: 966136524649410571n
-    },
+    ROLE_REACTIONS: [
+        {
+            messageId: 991183011120939031n,
+            emojiId: 991180598079143957n, // mkchat access ig
+            roleId: 991068852026753054n
+        },
+        {
+            messageId: 991183047972102174n,
+            emojiId: 991180573261447258n, // mkchat announcements
+            roleId: 991181784308002846n
+        }
+    ],
     DATABASE: {
         URL: "https://oyzzthycfrqozzbmcjry.supabase.co",
         KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95enp0aHljZnJxb3p6Ym1janJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDYxNzIzNTEsImV4cCI6MTk2MTc0ODM1MX0.uQ8FBwH0EKZ7RyMgOQs7vAVJhXL0txDBoLe4IZTcIRo",
