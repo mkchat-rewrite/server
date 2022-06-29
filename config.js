@@ -6,7 +6,7 @@ export default Object.freeze({
     BOT_PREFIX: "m?",
     JOIN_WEBHOOK_URL: "https://discord.com/api/webhooks/991068364648628234/kSUVEGyGaRr8oytbbtEFJNAq8ISdaF-f8M_YKaqMvV32LZ-ivwGWv2ATobOBK0-3MrQO",
     ACTION_WEBHOOK_URL: "https://discord.com/api/webhooks/991068566021341185/Xv4alF0JL6vK8ayyU09LAZY8gi2gZjWI5JqXgcYi-ApCye7Yj7_4cQQKZvNJ0wLG13RO",
-    MODERATION_PASSWORD: "eviternity2callithumpian8l0llygag7",
+    MODERATION_PASSWORD: "callithumpian8l0lly7eviternity2gag3",
     ROOMS: {
         "991040161141895238": "main",
         "991040184638394418": "main2",
