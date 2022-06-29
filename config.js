@@ -55,8 +55,8 @@ export default Object.freeze({
         }
     ],
     DATABASE: {
-        URL: "https://oyzzthycfrqozzbmcjry.supabase.co",
-        KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95enp0aHljZnJxb3p6Ym1janJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDYxNzIzNTEsImV4cCI6MTk2MTc0ODM1MX0.uQ8FBwH0EKZ7RyMgOQs7vAVJhXL0txDBoLe4IZTcIRo",
+        URL: "https://crhqywhiclgkpiblerkf.supabase.co",
+        KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyaHF5d2hpY2xna3BpYmxlcmtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTY1MjczMTgsImV4cCI6MTk3MjEwMzMxOH0.p8_SEs-jFbxXmr55o9sN9fc1x8GWjsrxMo7NhQK7QGI",
         TABLE: "bans"
     }
 });
