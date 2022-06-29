@@ -4,7 +4,7 @@
         const res = await fetch("//motd.mkchat.app/");
         if (res.status <= 400) throw("");
     } catch {
-        motd = "<3";
+        motd = "<a href='https://discord.gg/GbWngkTSZg'>Join Our Discord! <3</a>";
     };
     document.getElementById("motd").innerHTML = motd;
 })();
