@@ -2,7 +2,7 @@
     let motd;
     try {
         const res = await fetch("//motd.mkchat.app/");
-        motd = await res.text();
+        if (res.status <= 400) throw("");
     } catch {
         motd = "<3";
     };
