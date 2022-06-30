@@ -1,8 +1,9 @@
 (async () => {
     let motd;
     try {
-        const res = await fetch("//motd.mkchat.app/");
-        if (res.status <= 400) throw("");
+        const res = await fetch("/motd");
+        if (res.status >= 400) throw("");
+        motd = await res.text();
     } catch {
         motd = "<a href='https://discord.gg/GbWngkTSZg'>Join Our Discord! <3</a>";
     };
