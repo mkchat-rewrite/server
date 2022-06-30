@@ -335,11 +335,11 @@ app.get("/unban", async (reply, req) => {
 });
 
 app.get("/motd", async (reply, req) => {
-    const motds = (await fs.readFile("./motds.txt", "utf-8")).split("\n");
-    const motd = motds[Math.floor(Math.random() * motds.length)];
-
     reply.onAborted(() => reply.aborted = true);
     if (reply.aborted) return;
+    
+    const motds = (await fs.readFile("./motds.txt", "utf-8")).split("\n");
+    const motd = motds[Math.floor(Math.random() * motds.length)];
 
     reply.writeStatus("204").end(motd);
 });
