@@ -341,9 +341,7 @@ app.get("/motd", async (reply, req) => {
     const motds = (await fs.readFile("./motds.txt", "utf-8")).split("\n");
     const motd = motds[Math.floor(Math.random() * motds.length)];
 
-    console.log(motds, motd);
-
-    reply.writeStatus("204").end(motd);
+    reply.writeStatus("200").end(motd);
 });
 
 app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
