@@ -309,9 +309,7 @@ app.get("/doban", async (reply, req) => {
 });
 
 app.get("/unban", async (reply, req) => {
-    reply.writeStatus("204").end();
-    
-    /*const requestAddrs = req.getHeader("x-forwarded-for").split(", ");
+    const requestAddrs = req.getHeader("x-forwarded-for").split(", ");
     const modAddr = requestAddrs[0];
     const query = parseQuery(req.getQuery());
     if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end("Invalid password!");
@@ -333,7 +331,17 @@ app.get("/unban", async (reply, req) => {
 
     await logModAction(modAddr, "unban", isBanned);
 
-    reply.writeStatus("204").end();*/
+    reply.writeStatus("204").end();
+});
+
+app.get("/motd", async (reply, req) => {
+    const motds = await fs.readFile("./motds.txt", "utf-8").split("\n");
+    const motd = motds[Math.floor(Math.random() * motds.length)];
+
+    reply.onAborted(() => reply.aborted = true);
+    if (reply.aborted) return;
+
+    reply.writeStatus("204").end(motd);
 });
 
 app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
