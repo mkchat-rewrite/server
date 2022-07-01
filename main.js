@@ -422,7 +422,7 @@ function buildServerMessage(text) {
         author: "SERVER",
         text: text,
         badge: "system",
-        avatar: "https://websocket-client.distrust.repl.co/imgs/favicon.png"
+        avatar: "https://mkchat.app/imgs/favicon.png"
     });
 };
 
