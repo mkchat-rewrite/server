@@ -3,7 +3,7 @@ import uws from "uWebSockets.js";
 import { startBot, createBot, sendMessage, addRole, removeRole, getUser, avatarURL, Intents } from "discordeno";
 import Scraper from "lite-meta-scraper";
 import mime from "mime-types";
-import { fetch } from "undici";
+import { request } from "undici";
 import { nanoid } from "nanoid";
 import { FastRateLimit } from "fast-ratelimit";
 import { createClient } from "@supabase/supabase-js";
@@ -471,7 +471,7 @@ function quoteParser(text) {
 
 async function executeWebhook(url, message) {
     try {
-        await fetch(url, {
+        await request(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(message)
@@ -552,8 +552,8 @@ async function getAvatarUrl(author) {
     });
     const avatarId = discordAv.split("/")[5].split(".png")[0];
 
-    const res = await fetch(`https://proxy.mkchat.app/avatars/${author.id}/${avatarId}.gif`);
-    return `https://proxy.mkchat.app/avatars/${author.id}/${avatarId}.${res.status === 200 ? "gif" : "webp"}`;
+    const { statusCode } = await request(`https://proxy.mkchat.app/avatars/${author.id}/${avatarId}.gif`);
+    return `https://proxy.mkchat.app/avatars/${author.id}/${avatarId}.${statusCode === 200 ? "gif" : "webp"}`;
 };
 
 function iteratorToArr(iterator) {
