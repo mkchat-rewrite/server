@@ -1,11 +1,11 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap");
 
 :root {
-    --accent-unified: rgb(68, 156, 248);
+    --accent-unified: rgb(141, 141, 255);
 
-    --accent-r: 68;
-    --accent-g: 156;
-    --accent-b: 248;
+    --accent-r: 141;
+    --accent-g: 141;
+    --accent-b: 255;
     --accent: rgb(var(--accent-r), var(--accent-g), var(--accent-b));
 }
 
@@ -13,16 +13,16 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Roboto Mono", monospace;
+    font-family: "Montserrat", sans-serif;
 }
 
 body {
     height: 100vh;
-    background: #1d1d1d;
+    background: rgb(36, 41, 49);
 }
 
 .btn {
-    font-family: "Roboto Mono", monospace;
+    font-family: "Montserrat", sans-serif;
     padding: .5rem 1.1rem;
     font-size: 1.2rem;
     color: #ffffff;
@@ -36,16 +36,12 @@ body {
     text-decoration: underline;
 }
 
-.btn:active {
-    transform: scale(.9);
-}
-
 .btn-primary {
     background: var(--accent);
 }
 
 .btn-primary:hover {
-    background: #3484da;
+    background: rgb(109, 109, 196);
 }
 
 .btn-secondary {
