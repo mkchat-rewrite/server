@@ -32,10 +32,6 @@ body {
     transition: .15s;
 }
 
-.btn:hover {
-    text-decoration: underline;
-}
-
 .btn-primary {
     background: var(--accent);
 }
