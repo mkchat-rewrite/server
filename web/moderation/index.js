@@ -20,7 +20,7 @@ async function authenticate(authorizationCode) {
             "Content-Type": "application/x-www-form-urlencoded",
             "Authorization": `Basic ${credentials}`
         },
-        body: `grant_type=authorization_code&code=${authorizationCode}&redirect_uri=http://127.0.0.1:5501/`
+        body: `grant_type=authorization_code&code=${authorizationCode}&redirect_uri=https://mkchat.app/moderation`
     });
     const { access_token } = await res.json();
 
@@ -39,5 +39,5 @@ async function fetchUserId(token) {
 };
 
 document.getElementById("btn-login").onclick = () => {
-    window.location.replace("https://discord.com/api/oauth2/authorize?client_id=991058964592615494&redirect_uri=http%3A%2F%2F127.0.0.1%3A5501%2F&response_type=code&scope=identify");
+    window.location.replace("https://discord.com/api/oauth2/authorize?client_id=991058964592615494&redirect_uri=https%3A%2F%2Fmkchat.app%2Fmoderation&response_type=code&scope=identify");
 };
