@@ -51,6 +51,7 @@ async function loadUsers(password) {
         ipField.appendChild(ipValue);
         ipValue.classList.add("value");
         ipValue.classList.add("ip-addr");
+        ipValue.tabIndex = -1;
         ipValue.innerText = user.ip;
 
         /* -- name -- */
