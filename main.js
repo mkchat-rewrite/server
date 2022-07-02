@@ -114,7 +114,7 @@ app.ws("/*", {
     open: ws => {
         ws.id = nanoid(16);
 
-        users.set(ws.id, { disconnect: ws.end(1, "kicked!") }); // value will be empty until the client sends join request to server (this is used because uws socket remoteaddress function is practically useless to us and we might as well send connect params along with it instead of via another socket message)
+        users.set(ws.id, { disconnect: () => { ws.end(1, "kicked!") } }); // value will be empty until the client sends join request to server (this is used because uws socket remoteaddress function is practically useless to us and we might as well send connect params along with it instead of via another socket message)
 
         ws.send(JSON.stringify({
             type: "connect",
