@@ -1,80 +1,51 @@
-@import url("../css/style.css");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css");
+
+:root {
+    --accent-unified: rgb(141, 141, 255);
+
+    --accent-r: 141;
+    --accent-g: 141;
+    --accent-b: 255;
+    --accent: rgb(var(--accent-r), var(--accent-g), var(--accent-b));
+}
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    color: #ffffff;
+    font-family: "Montserrat", sans-serif;
 }
 
 body {
     height: 100vh;
-    background: #121212;
-    overflow-x: hidden;
+    background: rgb(36, 41, 49);
 }
 
-.overlay {
-    background: #ffffff;
-    height: 100vh;
-    width: 100vw;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 999;
-}
-
-#login {
-    background: #121212;
-    display: grid;
-    place-content: center;
-    gap: .5rem;
-}
-
-table {
-    border-collapse: collapse;
-    width: 100vw;
-}
-
-tr {
-    border: 1px solid #00000000;
-}
-
-tr:hover {
-    border: 1px solid rgb(var(--primary-dark));
-    background: rgba(var(--primary), .2);
-}
-
-th, td {
-    padding: .5rem .75rem;
-}
-
-th {
-    background: rgb(var(--primary));
-    position: sticky;
-    top: 0;
-    left: 0;
-}
-
-td {
-    word-break: break-all;
+.btn {
+    font-family: "Montserrat", sans-serif;
+    padding: .8rem 1.25rem;
+    color: #ffffff;
+    border: none;
+    border-radius: .3rem;
     cursor: pointer;
     transition: .15s;
 }
 
-.user-entry {
-    min-width: calc(100vw / 3);
-    max-width: calc(100vw / 3);
+.btn-primary {
+    background: var(--accent);
 }
 
-.ban-entry {
-    min-width: calc(100vw / 5);
-    max-width: calc(100vw / 5);
+.btn-primary:hover {
+    background: rgb(109, 109, 196);
 }
 
-#toggle {
-    position: fixed;
-    bottom: .5rem;
-    right: .5rem;
+.btn-secondary {
+    background: #888888;
+}
+
+.btn-secondary:hover {
+    background: #686868;
 }
 
 .modal {
@@ -88,7 +59,7 @@ td {
     top: 0;
     left: 0;
     color: #ffffff;
-    z-index: 99;
+    z-index: 999;
 }
 
 .modal-content {
@@ -116,6 +87,35 @@ td {
     display: flex;
 }
 
+.modal-body .modal-nav {
+    height: 100%;
+    width: 7rem;
+}
+
+.modal-nav .btn {
+    background: #00000000;
+    padding: 1rem .25rem;
+    width: 100%;
+    border-radius: 0;
+    font-size: .8rem;
+    border: .1rem solid rgba(255, 255, 255, .2);
+}
+
+.modal-nav .btn:active {
+    transform: scale(1);
+}
+
+.modal-nav .btn:hover, .modal-nav .btn-active {
+    background: rgba(0 ,0, 0, .3);
+    border: .1rem solid #00000000;
+}
+
+.modal-body .modal-item {
+    background: rgba(0 ,0, 0, .3);
+    width: calc(100% - 7rem);
+    padding: .25rem .5rem;
+}
+
 .modal-content .modal-footer {
     justify-self: flex-end;
     width: 100%;
@@ -141,28 +141,12 @@ td {
     display: none;
 }
 
-::-webkit-scrollbar {
-    width: .5rem;
-}
-::-webkit-scrollbar-thumb {
-    background: rgb(var(--primary));
-}
-::-webkit-scrollbar-thumb:hover {
-    background: rgb(var(--primary-dark));
-}
-::-webkit-scrollbar-corner {
-    background: rgba(0, 0, 0, 0);
+#btn-login {
+    width: 15rem;
 }
 
-input[type=text] {
-    padding: .5rem .75rem;
-    border-radius: .3rem;
-    font-size: 1.1rem;
-    border: .1rem solid rgb(var(--secondary));
-    outline: none;
-    color: #000000;
-}
-
-input[type=text]:active {
-    box-shadow: 0 0 0 .2rem rgba(var(--primary), .5);
+#btn-login::before {
+    font-family: "Font Awesome 6 Brands";
+    content: "\f392";
+    padding-right: .4rem;
 }
