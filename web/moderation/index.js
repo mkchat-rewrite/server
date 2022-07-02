@@ -74,6 +74,25 @@ async function loadUsers(password) {
         const idValue = document.createElement("span");
         idField.appendChild(idValue);
         idValue.innerText = user.id;
+
+        const banBtn = document.createElement("button");
+        banBtn.classList.add("btn");
+        banBtn.classList.add("btn-primary");
+        banBtn.innerText = "Ban";
+
+        if (user?.isDisconnected) {
+            entry.appendChild(banBtn);
+        } else {
+            const btnGroup = document.createElement("div");
+            entry.appendChild(btnGroup);
+            btnGroup.classList.add("btn-group");
+    
+            const kickBtn = document.createElement("button");
+            btnGroup.appendChild(kickBtn);
+            kickBtn.classList.add("btn");
+            kickBtn.classList.add("btn-primary");
+            kickBtn.innerText = "Kick";
+        };
     };
 };
 
