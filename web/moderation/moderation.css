@@ -194,3 +194,11 @@ input[type=text]:active {
 .entry-data .field {
     color: rgb(194, 194, 194);
 }
+
+.ip-addr {
+    filter: blur(0.25rem);
+}
+
+.ip-addr:hover {
+    filter: none;
+}

@@ -50,6 +50,7 @@ async function loadUsers(password) {
         const ipValue = document.createElement("span");
         ipField.appendChild(ipValue);
         ipValue.classList.add("value");
+        ipValue.classList.add("ip-addr");
         ipValue.innerText = user.ip;
 
         /* -- name -- */
