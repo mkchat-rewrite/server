@@ -5,7 +5,7 @@ import { startBot, createBot, sendMessage, addRole, removeRole, getUser, Intents
 import { nanoid } from "nanoid";
 import { FastRateLimit } from "fast-ratelimit";
 import { createClient } from "@supabase/supabase-js";
-import { abToStr, parseMessage, parseQuery, filterName, checkName, filterMessage, removeHtml, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom } from "./helpers.js";
+import { parseMessage, parseQuery, filterName, checkName, filterMessage, removeHtml, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom } from "./helpers.js";
 import config from "./config.js";
 
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
@@ -26,6 +26,7 @@ class UserMap extends Map {
 
 const users = new UserMap();
 const persistentUsers = new UserMap();
+const moderators = new Map(); // doesnt need list function for anything right now so a regular map will sufice
 
 const bot = createBot({
     token: config.TOKEN,
@@ -402,18 +403,39 @@ app.ws("/moderation", {
     idleTimeout: 32,
 
     upgrade: (reply, req, context) => {
+        console.log(`http upgrading to ws, URL: ${req.getUrl()}`);
 
+        const ips = req.getHeader("x-forwarded-for").split(", ");
+        const ip = ips[0];
+
+        console.log(ip); // not intended to be used long-term, just testing for some future changes to how connections take place
+    
+        reply.upgrade(
+            { url: req.getUrl() },
+            req.getHeader("sec-websocket-key"),
+            req.getHeader("sec-websocket-protocol"),
+            req.getHeader("sec-websocket-extensions"),
+            context
+        );
     },
     open: ws => {
+        ws.id = nanoid(64);
 
+        users.set(ws.id, {}); // value will be empty until the client sends join request to server (this is used because uws socket remoteaddress function is practically useless to us and we might as well send connect params along with it instead of via another socket message)
+
+        ws.send(JSON.stringify({
+            type: "connect",
+            id: ws.id
+        }));
     },
     message: async (ws, msg, _isBinary) => {
     
     },
     drain: ws => {
-        
+        console.log(`WebSocket backpressure: ${ws.getBufferedAmount()}`);
+        // not handling backpressue because im lazy lmfao   
     },
     close: async (ws, _code, _msg) => {
-
+        users.delete(ws.id);
     }
 });
