@@ -92,6 +92,8 @@ async function loadUsers(password) {
             kickBtn.classList.add("btn");
             kickBtn.classList.add("btn-primary");
             kickBtn.innerText = "Kick";
+
+            btnGroup.appendChild(banBtn);
         };
     };
 };
