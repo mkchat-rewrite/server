@@ -100,7 +100,7 @@ app.ws("/*", {
 
         users.set(ws.id, {}); // value will be empty until the client sends join request to server (this is used because uws socket remoteaddress function is practically useless to us and we might as well send connect params along with it instead of via another socket message)
 
-        console.log(getIp(res.getRemoteAddress(), res.getRemoteAddressAsText()));
+        console.log(getIp(ws.getRemoteAddress(), ws.getRemoteAddressAsText()));
 
         ws.send(JSON.stringify({
             type: "connect",
