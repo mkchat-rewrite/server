@@ -100,6 +100,8 @@ app.ws("/*", {
 
         users.set(ws.id, {}); // value will be empty until the client sends join request to server (this is used because uws socket remoteaddress function is practically useless to us and we might as well send connect params along with it instead of via another socket message)
 
+        console.log(getIp(res.getRemoteAddress(), res.getRemoteAddressAsText()));
+
         ws.send(JSON.stringify({
             type: "connect",
             id: ws.id
@@ -189,6 +191,25 @@ app.ws("/*", {
         });
     }
 });
+
+function getIp(ipBin, ipText) {            
+    let ipBuf = Buffer.from(ipBin)
+    let isIpv4 = true        
+    for (let i in ipv4Array) {    
+        if (typeof ipBuf[i] == "undefined" || ipBuf[i] != ipv4Array[i]) {
+            isIpv4 = false;
+            break;
+        }                
+    }                        
+    if (isIpv4) {
+        //ipv4     
+        ipBuf = ipBuf.slice(12)       
+        return `${ipBuf[0]}.${ipBuf[1]}.${ipBuf[2]}.${ipBuf[3]}`
+    } else {
+        //ipv6
+        return Buffer.from(ipText).toString()            
+    }
+}
 
 registerWebAssets("web"); // registers endpoints to serve client code at root
 
