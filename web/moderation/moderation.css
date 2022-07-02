@@ -162,6 +162,7 @@ input[type=text]:active {
     flex-direction: column;
     gap: 1rem;
     position: relative;
+    justify-content: space-between;
 }
 
 .entry .btn {
