@@ -100,7 +100,7 @@ app.ws("/*", {
 
         users.set(ws.id, {}); // value will be empty until the client sends join request to server (this is used because uws socket remoteaddress function is practically useless to us and we might as well send connect params along with it instead of via another socket message)
 
-        console.log(abToStr(ws.getRemoteAddress()), abToStr(ws.getRemoteAddressAsText()))
+        console.log(ws.getHeader("x-forwarded-for").split(", "));
 
         // ws.getHeader()
 
