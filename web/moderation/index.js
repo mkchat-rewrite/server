@@ -8,7 +8,7 @@ const params = Object.fromEntries((new URLSearchParams(window.location.search)).
 
 if (params?.code) {
     window.sessionStorage.setItem("discordAuthorizationCode", params.code);
-    window.location.reload();
+    window.location.replace(location.pathname);
 };
 
 ws.onmessage = async msg => {
