@@ -9,7 +9,7 @@ body {
 }
 
 .content {
-    background: rgb(49 54 62);
+    background: rgb(49, 54, 62);
     width: 25rem;
     min-height: 18rem;
     max-height: 28rem;
@@ -72,7 +72,7 @@ input:focus {
 }
 
 .nav {
-    background: rgb(49 54 62);
+    background: rgb(49, 54, 62);
     height: 1.5rem;
     width: 22rem;
     border-radius: .5rem 0rem 0rem 0rem;

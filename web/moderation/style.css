@@ -1,5 +1,4 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap");
-@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css");
 
 :root {
     --accent-unified: rgb(141, 141, 255);
@@ -138,15 +137,5 @@ body {
 }
 
 .invisible {
-    display: none;
-}
-
-#btn-login {
-    width: 15rem;
-}
-
-#btn-login::before {
-    font-family: "Font Awesome 6 Brands";
-    content: "\f392";
-    padding-right: .4rem;
+    display: none !important;
 }

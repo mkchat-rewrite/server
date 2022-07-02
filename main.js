@@ -101,7 +101,7 @@ app.ws("/*", {
         const ips = req.getHeader("x-forwarded-for").split(", ");
         const ip = ips[0];
 
-        console.log(ip);
+        console.log(ip); // not intended to be used long-term, just testing for some future changes to how connections take place
     
         reply.upgrade(
             { url: req.getUrl() },
@@ -110,12 +110,11 @@ app.ws("/*", {
             req.getHeader("sec-websocket-extensions"),
             context
         );
-    
     },
     open: ws => {
         ws.id = nanoid(16);
 
-        users.set(ws.id, {}); // value will be empty until the client sends join request to server (this is used because uws socket remoteaddress function is practically useless to us and we might as well send connect params along with it instead of via another socket message)
+        users.set(ws.id, { disconnect: ws.end(1, "kicked!") }); // value will be empty until the client sends join request to server (this is used because uws socket remoteaddress function is practically useless to us and we might as well send connect params along with it instead of via another socket message)
 
         ws.send(JSON.stringify({
             type: "connect",
@@ -175,6 +174,9 @@ app.ws("/*", {
                 }).catch(() => { /* message gets eaten 😋 */ });
 
                 if (channel) await sendMessage(bot, channel, { content: `**${user.username}:** ${wordFilter(noDiscordMentions(message.text))}` });
+                break;
+            case "kickme":
+                user.disconnect();
                 break;
             default:
                 break;
@@ -393,3 +395,23 @@ export async function registerWebAssets(folder) {
         });
     };
 };
+
+app.ws("/moderation", {
+    idleTimeout: 32,
+
+    upgrade: (reply, req, context) => {
+
+    },
+    open: ws => {
+
+    },
+    message: async (ws, msg, _isBinary) => {
+    
+    },
+    drain: ws => {
+        
+    },
+    close: async (ws, _code, _msg) => {
+
+    }
+});

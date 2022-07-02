@@ -1,3 +1,4 @@
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css");
 @import url("./style.css");
 
 * {
@@ -163,4 +164,64 @@ input[type=text] {
 
 input[type=text]:active {
     box-shadow: 0 0 0 .2rem rgba(var(--primary), .5);
+}
+
+#btn-login {
+    width: 15rem;
+}
+
+#btn-login::before {
+    font-family: "Font Awesome 6 Brands";
+    content: "\f392";
+    padding-right: .4rem;
+}
+
+#data {
+    display: grid;
+    padding: 1.5rem;
+    gap: .75rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    place-content: center;
+    border-radius: .6rem;
+}
+
+.entry {
+    background: rgb(49, 54, 62);
+    padding: 1rem;
+    border-radius: .3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+}
+
+.entry .btn {
+    width: 48%;
+    align-self: flex-end;
+}
+
+.entry .btn-group {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn-group .btn {
+    width: 48%;
+}
+
+.entry-data {
+    border-radius: .3rem;
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+}
+
+.entry-data .field-value {
+    max-width: 300px;
+    word-break: break-all;
+}
+
+.entry-data .field {
+    color: rgb(194, 194, 194);
 }
