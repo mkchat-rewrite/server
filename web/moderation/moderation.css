@@ -201,6 +201,6 @@ input[type=text]:active {
     cursor: default;
 }
 
-.ip-addr:hover {
+.ip-addr:hover, .ip-addr:focus {
     filter: none;
 }
