@@ -5,7 +5,7 @@
 const SERVER_URL = "mkchat.app";
 const ws = new WebSocket(`wss://${SERVER_URL}/moderation`);
 
-ws.onmessage = msg => {
+ws.onmessage = async msg => {
     const message = JSON.parse(msg.data);
 
     switch (message.type) {
