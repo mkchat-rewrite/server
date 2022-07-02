@@ -97,6 +97,11 @@ app.ws("/*", {
 
     upgrade: (reply, req, context) => {
         console.log(`http upgrading to ws, URL: ${req.getUrl()}`);
+
+        const ips = req.getHeader("x-forwarded-for").split(", ");
+        const ip = ips[0];
+
+        console.log(ip);
     
         reply.upgrade(
             { url: req.getUrl() },
