@@ -29,37 +29,6 @@ body {
     gap: .5rem;
 }
 
-table {
-    border-collapse: collapse;
-    width: 100vw;
-}
-
-tr {
-    border: 1px solid #00000000;
-}
-
-tr:hover {
-    border: 1px solid rgb(var(--primary-dark));
-    background: rgba(var(--primary), .2);
-}
-
-th, td {
-    padding: .5rem .75rem;
-}
-
-th {
-    background: rgb(var(--primary));
-    position: sticky;
-    top: 0;
-    left: 0;
-}
-
-td {
-    word-break: break-all;
-    cursor: pointer;
-    transition: .15s;
-}
-
 .user-entry {
     min-width: calc(100vw / 3);
     max-width: calc(100vw / 3);

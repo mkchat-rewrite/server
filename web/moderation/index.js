@@ -40,6 +40,7 @@ async function loadUsers(password) {
 
         const ipField = document.createElement("div");
         entryData.appendChild(ipField);
+        ipField.classList.add("field-value");
 
         const ipLabel = document.createElement("span");
         ipField.appendChild(ipLabel);
@@ -55,6 +56,7 @@ async function loadUsers(password) {
 
         const nameField = document.createElement("div");
         entryData.appendChild(nameField);
+        nameField.classList.add("field-value");
 
         const nameLabel = document.createElement("span");
         nameField.appendChild(nameLabel);
@@ -70,6 +72,7 @@ async function loadUsers(password) {
 
         const idField = document.createElement("div");
         entryData.appendChild(idField);
+        idField.classList.add("field-value");
 
         const idLabel = document.createElement("span");
         idField.appendChild(idLabel);
