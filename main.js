@@ -95,6 +95,18 @@ const bot = createBot({
 app.ws("/*", {
     idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason every 2 minutes
 
+    upgrade: (reply, req, context) => {
+        console.log(`http upgrading to ws, URL: ${req.getUrl()}`);
+    
+        reply.upgrade(
+            { url: req.getUrl() },
+            req.getHeader("sec-websocket-key"),
+            req.getHeader("sec-websocket-protocol"),
+            req.getHeader("sec-websocket-extensions"),
+            context
+        );
+    
+    },
     open: ws => {
         ws.id = nanoid(16);
 
