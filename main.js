@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import uws from "uWebSockets.js";
+import mime from "mime-types";
 import { startBot, createBot, sendMessage, addRole, removeRole, getUser, Intents } from "discordeno";
 import { nanoid } from "nanoid";
 import { FastRateLimit } from "fast-ratelimit";

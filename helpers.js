@@ -1,6 +1,5 @@
 import fs from "fs/promises";
 import Scraper from "lite-meta-scraper";
-import mime from "mime-types";
 import { request } from "undici";
 import { avatarURL } from "discordeno";
 import config from "./config.js";
