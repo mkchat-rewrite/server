@@ -4,6 +4,12 @@
 
 const SERVER_URL = "mkchat.app";
 const ws = new WebSocket(`wss://${SERVER_URL}/moderation`);
+const params = Object.fromEntries((new URLSearchParams(window.location.search)).entries());
+
+if (params?.code) {
+    window.sessionStorage.setItem("discordAuthorizationCode", params.code);
+    window.location.reload();
+};
 
 ws.onmessage = async msg => {
     const message = JSON.parse(msg.data);
@@ -85,6 +91,8 @@ async function loadUsers(password) {
         idField.appendChild(idValue);
         idValue.classList.add("value");
         idValue.innerText = user.id;
+
+        /* -------- */
 
         const banBtn = document.createElement("button");
         banBtn.classList.add("btn");
