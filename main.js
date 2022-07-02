@@ -253,7 +253,7 @@ app.get("/join/:id", async (reply, req) => {
             room: room
         };
         
-        users.set(id, { ...user, existingUserData });
+        users.set(id, { ...user, ...existingUserData });
         persistentUsers.set(id, { ...user, id });
     
         reply.write("ok");
