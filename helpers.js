@@ -311,37 +311,6 @@ export function loadCommands() {
     });
 };
 
-// folder name supplied should have no slashes (unless subfolder ex. folder/subfolder)
-export async function registerWebAssets(folder) {        
-    const files = await fs.readdir(folder);
-
-    for (const file of files) {
-        if (!file.includes(".")) {
-            registerWebAssets(`./${folder}/${file}`);
-            continue;
-        };
-
-        const data = await fs.readFile(`./${folder}/${file}`);
-
-        const prefix = folder.replace(/(.\/web|web)/, ""); // hardcoding this makes passing folder name as param useless, but who cares
-        const mimeType = mime.lookup(file);
-
-        app.get(`${prefix}/${file}`, (reply, _req) => {
-            reply.writeHeader("Content-Type", mimeType).end(data);
-        });
-        
-        if (file !== "index.html") continue;
-
-        app.get(prefix || "/", (reply, _req) => {
-            reply.writeHeader("Content-Type", mimeType).end(data);
-        });
-
-        app.get(`${prefix}/`, (reply, _req) => {
-            reply.writeHeader("Content-Type", mimeType).end(data);
-        });
-    };
-};
-
 export function fetchRoom(channelId) {
     const rooms = config.ROOMS;
 
