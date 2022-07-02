@@ -5,7 +5,7 @@ import { startBot, createBot, sendMessage, addRole, removeRole, getUser, Intents
 import { nanoid } from "nanoid";
 import { FastRateLimit } from "fast-ratelimit";
 import { createClient } from "@supabase/supabase-js";
-import { abToStr, parseMessage, parseQuery, filterName, checkName, filterMessage, removeHtml, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom, abToStr } from "./helpers.js";
+import { abToStr, parseMessage, parseQuery, filterName, checkName, filterMessage, removeHtml, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom } from "./helpers.js";
 import config from "./config.js";
 
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
@@ -101,6 +101,10 @@ app.ws("/*", {
         users.set(ws.id, {}); // value will be empty until the client sends join request to server (this is used because uws socket remoteaddress function is practically useless to us and we might as well send connect params along with it instead of via another socket message)
 
         console.log(abToStr(ws.getRemoteAddress()), abToStr(ws.getRemoteAddressAsText()))
+
+        // ws.getHeader()
+
+        // req.getHeader("x-forwarded-for").split(", ");
 
         ws.send(JSON.stringify({
             type: "connect",
