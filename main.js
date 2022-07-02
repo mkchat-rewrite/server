@@ -188,10 +188,13 @@ app.ws("/*", {
         // not handling backpressue because im lazy lmfao
     },
     close: async (ws, _code, _msg) => {
-        const user = users.get(ws.id);
+        const userId = ws.id;
+        const user = users.get(userId);
+        const persistentUser = persistentUsers.get(userId);
         const room = user.room;
 
-        users.delete(ws.id);
+        users.delete(userId);
+        persistentUsers.set(userId, { ...persistentUser, isDisconnected: true });
 
         app.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.ERROR};">${filterName(user.username)} has left!</span>`));
 
