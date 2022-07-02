@@ -54,7 +54,7 @@ const bot = createBot({
                     text: await parseGif(filterMessage(message.content)) + attachmentParser(message.attachments),
                     badge: config.MOD_IDS.includes(message.authorId) ? "Chat Staff" : "Discord User",
                     sticker: sticker ? getStickerUrl(sticker) : null,
-                    avatar: await getAvatarUrl(user)
+                    avatar: await getAvatarUrl(bot, user)
                 }));
             };
 

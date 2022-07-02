@@ -203,7 +203,7 @@ export function getStickerUrl(sticker) {
     return result;
 };
 
-export async function getAvatarUrl(author) {
+export async function getAvatarUrl(bot, author) {
     const discordAv = await avatarURL(bot, author.id, author.discriminator, {
         avatar: author.avatar,
         format: "png"
