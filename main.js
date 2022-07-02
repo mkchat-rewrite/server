@@ -245,13 +245,15 @@ app.get("/join/:id", async (reply, req) => {
     } else if (name.length > 30) {
         reply.write("username too long");
     } else {
+        const existingUserData = users.get(id);
+
         const user = {
             username: name,
             ip,
             room: room
         };
         
-        users.set(id, user);
+        users.set(id, { ...user, existingUserData });
         persistentUsers.set(id, { ...user, id });
     
         reply.write("ok");
