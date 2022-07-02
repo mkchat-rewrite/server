@@ -43,10 +43,12 @@ async function loadUsers(password) {
 
         const ipLabel = document.createElement("span");
         ipField.appendChild(ipLabel);
+        ipLabel.classList.add("field");
         ipLabel.innerText = "IP: ";
 
         const ipValue = document.createElement("span");
         ipField.appendChild(ipValue);
+        ipValue.classList.add("value");
         ipValue.innerText = user.ip;
 
         /* -- name -- */
@@ -56,10 +58,12 @@ async function loadUsers(password) {
 
         const nameLabel = document.createElement("span");
         nameField.appendChild(nameLabel);
+        nameLabel.classList.add("field");
         nameLabel.innerText = "Username: ";
 
         const nameValue = document.createElement("span");
         nameField.appendChild(nameValue);
+        nameValue.classList.add("value");
         nameValue.innerText = user.username;
 
         /* -- id -- */
@@ -69,10 +73,12 @@ async function loadUsers(password) {
 
         const idLabel = document.createElement("span");
         idField.appendChild(idLabel);
+        idLabel.classList.add("field");
         idLabel.innerText = "ID: ";
 
         const idValue = document.createElement("span");
         idField.appendChild(idValue);
+        idValue.classList.add("value");
         idValue.innerText = user.id;
 
         const banBtn = document.createElement("button");
