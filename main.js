@@ -192,7 +192,8 @@ app.ws("/*", {
     }
 });
 
-function getIp(ipBin, ipText) {            
+function getIp(ipBin, ipText) {     
+    const ipv4Array = [0,0,0,0,0,0,0,0,0,0,255,255]       
     let ipBuf = Buffer.from(ipBin)
     let isIpv4 = true        
     for (let i in ipv4Array) {    
