@@ -16,7 +16,6 @@ ws.onopen = async () => {
 
     ws.send(JSON.stringify({ type: "requestusersupdate" }));
     ws.send(JSON.stringify({ type: "requestbansupdate" }));
-    // const pass = localStorage.getItem("password");
 };
 
 ws.onmessage = async msg => {
@@ -135,6 +134,73 @@ async function loadUsers(users) {
 
             btnGroup.appendChild(banBtn);
         };
+    };
+};
+
+async function loadBans(bans) {
+    const data = document.getElementById("data");
+    data.innerText = "";
+
+    for (const ban of bans) {
+        const entry = document.createElement("div");
+        data.appendChild(entry);
+        entry.classList.add("entry");
+
+        const entryData = document.createElement("div");
+        entry.appendChild(entryData);
+        entryData.classList.add("entry-data");
+
+        /* -- ip -- */
+
+        const ipField = document.createElement("div");
+        entryData.appendChild(ipField);
+        ipField.classList.add("field-value");
+
+        const ipLabel = document.createElement("span");
+        ipField.appendChild(ipLabel);
+        ipLabel.classList.add("field");
+        ipLabel.innerText = "IP: ";
+
+        const ipValue = document.createElement("span");
+        ipField.appendChild(ipValue);
+        ipValue.classList.add("value");
+        ipValue.classList.add("ip-addr");
+        ipValue.tabIndex = -1;
+        ipValue.innerText = user.ip;
+
+        /* -- name -- */
+
+        const nameField = document.createElement("div");
+        entryData.appendChild(nameField);
+        nameField.classList.add("field-value");
+
+        const nameLabel = document.createElement("span");
+        nameField.appendChild(nameLabel);
+        nameLabel.classList.add("field");
+        nameLabel.innerText = "Username: ";
+
+        const nameValue = document.createElement("span");
+        nameField.appendChild(nameValue);
+        nameValue.classList.add("value");
+        nameValue.innerText = user.username;
+
+        /* -- id -- */
+
+        const idField = document.createElement("div");
+        entryData.appendChild(idField);
+        idField.classList.add("field-value");
+
+        const idLabel = document.createElement("span");
+        idField.appendChild(idLabel);
+        idLabel.classList.add("field");
+        idLabel.innerText = "ID: ";
+
+        const idValue = document.createElement("span");
+        idField.appendChild(idValue);
+        idValue.classList.add("value");
+        idValue.innerText = user.id;
+
+        /* -------- */
     };
 };
 

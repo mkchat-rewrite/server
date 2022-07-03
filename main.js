@@ -433,6 +433,8 @@ app.ws("/moderation", {
         moderators.set(ws.id, {});
     },
     message: async (ws, msg, _isBinary) => {
+        if (!moderators.get(ws.id)) return;
+
         const message = parseMessage(msg);
         if (!message) return;
 
