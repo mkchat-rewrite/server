@@ -258,7 +258,7 @@ app.get("/join/:id", async (reply, req) => {
         };
         
         users.set(id, { ...user, ...existingUserData });
-        persistentUsers.set(id, { ...user, id });
+        persistentUsers.set(id, { ...user, ...existingUserData, id });
     
         reply.write("ok");
     }; // *cough* yandere dev technique
