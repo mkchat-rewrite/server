@@ -442,9 +442,15 @@ app.ws("/moderation", {
         if (!message) return;
 
         switch (message.type) {
+            case "login":
+                break;
             case "kick":
                 const user = persistentUsers.get(message?.userId);
                 user.disconnect();
+                break;
+            case "ban":
+                break;
+            default:
                 break;
         };
     },

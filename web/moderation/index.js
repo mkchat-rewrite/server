@@ -11,6 +11,10 @@ if (params?.code) {
     window.location.replace(location.pathname);
 };
 
+ws.onopen = () => {
+    console.log("Connected :)");
+};
+
 ws.onmessage = async msg => {
     const message = JSON.parse(msg.data);
 
@@ -20,8 +24,10 @@ ws.onmessage = async msg => {
             await loadUsers(pass);
             break;
         case "success":
+            console.log(message.content);
             break;
         case "error":
+            console.log(message.content);
             break;
         default:
             break;
