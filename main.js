@@ -430,12 +430,7 @@ app.ws("/moderation", {
     open: ws => {
         ws.id = nanoid(64);
 
-        users.set(ws.id, {}); // value will be empty until the client sends join request to server (this is used because uws socket remoteaddress function is practically useless to us and we might as well send connect params along with it instead of via another socket message)
-
-        ws.send(JSON.stringify({
-            type: "connect",
-            id: ws.id
-        }));
+        moderators.set(ws.id, {});
     },
     message: async (ws, msg, _isBinary) => {
         const message = parseMessage(msg);
@@ -450,15 +445,28 @@ app.ws("/moderation", {
                 break;
             case "ban":
                 break;
+            case "fetchusers":
+                ws.send(JSON.stringify({
+                    type: "updateuserlist",
+                    data: JSON.stringify(iteratorToArr(persistentUsers.values()))
+                }));
+                break;
+            case "fetchbans":
+                break;
             default:
                 break;
         };
+
+        const query = parseQuery(req.getQuery());
+        if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end();
+        
+        reply.writeStatus("200").end(JSON.stringify(iteratorToArr(persistentUsers.values())));
     },
     drain: ws => {
         console.log(`WebSocket backpressure: ${ws.getBufferedAmount()}`);
         // not handling backpressue because im lazy lmfao   
     },
     close: async (ws, _code, _msg) => {
-        users.delete(ws.id);
+        moderators.delete(ws.id);
     }
 });

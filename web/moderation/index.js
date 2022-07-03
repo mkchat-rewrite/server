@@ -11,29 +11,37 @@ if (params?.code) {
     window.location.replace(location.pathname);
 };
 
-ws.onopen = () => {
-    console.log("Connected :)");
+ws.onopen = async () => {
+    console.log("Connected to moderation dashboard websocket");
+    const pass = localStorage.getItem("password");
+    await loadUsers(pass);
 };
 
 ws.onmessage = async msg => {
     const message = JSON.parse(msg.data);
 
     switch (message.type) {
-        case "connect":
-            const pass = localStorage.getItem("password");
-            await loadUsers(pass);
-            break;
         case "success":
             console.log(message.content);
             break;
         case "error":
             console.log(message.content);
             break;
+        case "updateuserlist":
+            console.log(message.data);
+            break;
+        case "updatebanlist":
+            console.log(message.data);
+            break;
         default:
             break;
     };
 
     console.log(message);
+};
+
+ws.onclose = () => {
+    console.log("Websocket connection closed");
 };
 
 async function loadUsers(password) {
