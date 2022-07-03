@@ -432,7 +432,15 @@ app.ws("/moderation", {
         }));
     },
     message: async (ws, msg, _isBinary) => {
-    
+        const message = parseMessage(msg);
+        if (!message) return;
+
+        switch (message.type) {
+            case "kick":
+                const user = persistentUsers.get(message?.userId);
+                user.disconnect();
+                break;
+        };
     },
     drain: ws => {
         console.log(`WebSocket backpressure: ${ws.getBufferedAmount()}`);

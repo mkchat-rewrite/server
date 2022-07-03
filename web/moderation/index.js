@@ -19,6 +19,10 @@ ws.onmessage = async msg => {
             const pass = localStorage.getItem("password");
             await loadUsers(pass);
             break;
+        case "success":
+            break;
+        case "error":
+            break;
         default:
             break;
     };
@@ -111,6 +115,10 @@ async function loadUsers(password) {
             kickBtn.classList.add("btn");
             kickBtn.classList.add("btn-primary");
             kickBtn.innerText = "Kick";
+            kickBtn.onclick = () => ws.send(JSON.stringify({
+                type: "kick",
+                userId: user.id
+            }));
 
             btnGroup.appendChild(banBtn);
         };
