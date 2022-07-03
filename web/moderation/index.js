@@ -16,7 +16,6 @@ ws.onopen = async () => {
 
     ws.send(JSON.stringify({ type: "requestusersupdate" }));
     const pass = localStorage.getItem("password");
-    await loadUsers(pass);
 };
 
 ws.onmessage = async msg => {
@@ -30,7 +29,7 @@ ws.onmessage = async msg => {
             console.log(message.content);
             break;
         case "updateuserlist":
-            console.log(message.data);
+            await loadUsers(message.data);
             break;
         case "updatebanlist":
             console.log(message.data);
@@ -46,10 +45,7 @@ ws.onclose = () => {
     console.log("Websocket connection closed");
 };
 
-async function loadUsers(password) {
-    const res = await fetch(`https://${SERVER_URL}/users?password=${password}`);
-    const users = await res.json();
-
+async function loadUsers(users) {
     const data = document.getElementById("data");
     data.innerText = "";
 
