@@ -456,11 +456,6 @@ app.ws("/moderation", {
             default:
                 break;
         };
-
-        const query = parseQuery(req.getQuery());
-        if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end();
-        
-        reply.writeStatus("200").end(JSON.stringify(iteratorToArr(persistentUsers.values())));
     },
     drain: ws => {
         console.log(`WebSocket backpressure: ${ws.getBufferedAmount()}`);
