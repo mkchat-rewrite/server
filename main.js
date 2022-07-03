@@ -452,6 +452,13 @@ app.ws("/moderation", {
                 }));
                 break;
             case "requestbansupdate":
+                const { data, error } = await supabase.from(config.DATABASE.TABLE).select();
+                if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
+
+                ws.send(JSON.stringify({
+                    type: "updatebanlist",
+                    data: data
+                }));
                 break;
             default:
                 break;

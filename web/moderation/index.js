@@ -15,7 +15,8 @@ ws.onopen = async () => {
     console.log("Connected to moderation dashboard websocket");
 
     ws.send(JSON.stringify({ type: "requestusersupdate" }));
-    const pass = localStorage.getItem("password");
+    ws.send(JSON.stringify({ type: "requestbansupdate" }));
+    // const pass = localStorage.getItem("password");
 };
 
 ws.onmessage = async msg => {
