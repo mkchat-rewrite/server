@@ -9,12 +9,12 @@
 }
 
 body {
-    overflow-x: hidden;
+    overflow: hidden;
     display: flex;
 }
 
 .overlay {
-    background: #ffffff;
+    background-color: #ffffff;
     height: 100vh;
     width: 100vw;
     position: absolute;
@@ -24,7 +24,7 @@ body {
 }
 
 #login {
-    background: rgb(36, 41, 49);
+    background-color: rgb(36, 41, 49);
     display: grid;
     place-content: center;
     gap: .5rem;
@@ -47,66 +47,6 @@ body {
     z-index: 999;
 }
 
-.modal {
-    background: rgba(0, 0, 0, 0.5);
-    width: 100%;
-    height: 100%;
-    position: absolute;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-    top: 0;
-    left: 0;
-    color: #ffffff;
-    z-index: 99;
-}
-
-.modal-content {
-    background: #363636;
-	width: 50vw;
-	aspect-ratio: auto 16/9;
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    border-radius: .3rem;
-}
-
-.modal-content .modal-header {
-    width: 100%;
-    height: 3rem;
-    padding-left: .5rem;
-    line-height: 3rem;
-    font-size: 1.5rem;
-    border: none;
-    border-bottom: .1rem solid rgba(255, 255, 255, .2);
-}
-
-.modal-content .modal-body {
-    height: calc(100% - 6.5rem);
-    display: flex;
-}
-
-.modal-content .modal-footer {
-    justify-self: flex-end;
-    width: 100%;
-    height: 3.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: center;
-    padding: .5rem;
-}
-
-.modal-content .close {
-    max-width: 100px;
-}
-
-@media screen and (max-width:1000px) {
-	.modal-content {
-		width: 90vw
-	}
-}
-
 .invisible {
     display: none;
 }
@@ -115,13 +55,13 @@ body {
     width: .5rem;
 }
 ::-webkit-scrollbar-thumb {
-    background: rgb(var(--primary));
+    background-color: rgb(var(--primary));
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: rgb(var(--primary-dark));
+    background-color: rgb(var(--primary-dark));
 }
 ::-webkit-scrollbar-corner {
-    background: rgba(0, 0, 0, 0);
+    background-color: rgba(0, 0, 0, 0);
 }
 
 input[type=text] {
@@ -147,7 +87,7 @@ input[type=text]:active {
     padding-right: .4rem;
 }
 
-.data {
+.tab {
     display: grid;
     padding: 1.5rem;
     gap: .75rem;
@@ -157,7 +97,7 @@ input[type=text]:active {
 }
 
 .entry {
-    background: rgb(49, 54, 62);
+    background-color: rgb(49, 54, 62);
     padding: 1rem;
     border-radius: .3rem;
     display: flex;
@@ -209,28 +149,29 @@ input[type=text]:active {
 }
 
 #nav {
-    background: rgb(28, 31, 37);
+    background-color: rgb(28, 31, 37);
     height: 100%;
-    width: 5rem;
     display: flex;
     flex-direction: column;
-    padding: .5rem;
+    padding: .75rem;
     gap: .5rem;
 }
 
 #nav .btn {
     background-color: rgba(0, 0, 0, 0   );
-    padding: auto;
-    font-size: 1.2rem;
-    width: 4rem;
-    height: 4rem;
+    padding: 0 0 0 0;
+    font-size: 1.3rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    transition: background-color .2s;
 }
 
-#nav .btn:hover {
+#nav .btn:hover, #nav .btn.active {
     background-color: var(--accent-unified);
 }
 
 #main {
     height: 100%;
     width: calc(100% - 5rem);
+    overflow-x: hidden;
 }

@@ -28,7 +28,7 @@ body {
     border: none;
     border-radius: .3rem;
     cursor: pointer;
-    transition: .15s;
+    transition: background-color .15s;
 }
 
 .btn-primary {

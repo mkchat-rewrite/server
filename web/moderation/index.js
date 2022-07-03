@@ -38,11 +38,30 @@ ws.onmessage = async msg => {
             break;
     };
 
-    console.log(message);
+    console.log("DEBUG: ", message);
 };
 
 ws.onclose = () => {
     console.log("Websocket connection closed");
+};
+
+const navBtns = document.querySelectorAll("#nav .btn");
+const tabs = document.getElementsByClassName("tab");
+
+console.log(tabs, navBtns);
+
+for (let i = 0; i < navBtns.length; i++) {
+    const btn = navBtns[i];
+
+    btn.onclick = () => {
+        for (let j = 0; j < navBtns.length; j++) {
+            navBtns[j].classList.remove("active");
+            if (tabs[j]) tabs[j].classList.add("invisible");
+        };
+
+        btn.classList.add("active");
+        if (tabs[i]) tabs[i].classList.remove("invisible");
+    };
 };
 
 async function loadUsers(users) {
