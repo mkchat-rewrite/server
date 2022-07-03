@@ -13,6 +13,8 @@ if (params?.code) {
 
 ws.onopen = async () => {
     console.log("Connected to moderation dashboard websocket");
+
+    ws.send(JSON.stringify({ type: "requestusersupdate" }));
     const pass = localStorage.getItem("password");
     await loadUsers(pass);
 };

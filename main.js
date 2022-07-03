@@ -445,13 +445,13 @@ app.ws("/moderation", {
                 break;
             case "ban":
                 break;
-            case "fetchusers":
+            case "requestusersupdate":
                 ws.send(JSON.stringify({
                     type: "updateuserlist",
                     data: JSON.stringify(iteratorToArr(persistentUsers.values()))
                 }));
                 break;
-            case "fetchbans":
+            case "requestbansupdate":
                 break;
             default:
                 break;
