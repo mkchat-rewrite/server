@@ -46,7 +46,7 @@ ws.onclose = () => {
 };
 
 async function loadUsers(users) {
-    const data = document.getElementById("data");
+    const data = document.getElementById("users");
     data.innerText = "";
 
     for (const user of users) {
@@ -138,7 +138,7 @@ async function loadUsers(users) {
 };
 
 async function loadBans(bans) {
-    const data = document.getElementById("data");
+    const data = document.getElementById("bans");
     data.innerText = "";
 
     for (const ban of bans) {

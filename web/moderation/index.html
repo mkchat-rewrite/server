@@ -15,12 +15,20 @@
     <script src="./js/tata.js"></script>
 </head>
 <body>
-    <div class="overlay invisible" id="login">
+    <!-- <div class="overlay invisible" id="login">
         <button class="btn btn-primary" id="btn-login">Discord OAuth Login</button>
-    </div>
+    </div> -->
     
-    <button class="btn btn-secondary" id="toggle">View Bans</button>
+    <!-- <button class="btn btn-secondary" id="toggle">View Bans</button> -->
 
-    <div id="data"></div>
+    <div id="nav">
+        <button class="btn"><i class="fa-solid fa-users"></i></button>
+        <button class="btn"><i class="fa-solid fa-gavel"></i></button>
+    </div>
+
+    <div id="main">
+        <div class="data" id="users"></div>
+        <div class="data invisible" id="bans"></div>
+    </div>
 </body>
 </html>

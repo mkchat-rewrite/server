@@ -10,6 +10,7 @@
 
 body {
     overflow-x: hidden;
+    display: flex;
 }
 
 .overlay {
@@ -40,9 +41,10 @@ body {
 }
 
 #toggle {
-    position: fixed;
+    position: absolute;
     bottom: .5rem;
     right: .5rem;
+    z-index: 999;
 }
 
 .modal {
@@ -145,7 +147,7 @@ input[type=text]:active {
     padding-right: .4rem;
 }
 
-#data {
+.data {
     display: grid;
     padding: 1.5rem;
     gap: .75rem;
@@ -204,4 +206,31 @@ input[type=text]:active {
 
 .ip-addr:hover, .ip-addr:focus {
     filter: none;
+}
+
+#nav {
+    background: rgb(28, 31, 37);
+    height: 100%;
+    width: 5rem;
+    display: flex;
+    flex-direction: column;
+    padding: .5rem;
+    gap: .5rem;
+}
+
+#nav .btn {
+    background-color: rgba(0, 0, 0, 0   );
+    padding: auto;
+    font-size: 1.2rem;
+    width: 4rem;
+    height: 4rem;
+}
+
+#nav .btn:hover {
+    background-color: var(--accent-unified);
+}
+
+#main {
+    height: 100%;
+    width: calc(100% - 5rem);
 }
