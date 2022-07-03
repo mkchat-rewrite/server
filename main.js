@@ -433,8 +433,6 @@ app.ws("/moderation", {
         moderators.set(ws.id, {});
     },
     message: async (ws, msg, _isBinary) => {
-        if (!moderators.get(ws.id)) return;
-
         const message = parseMessage(msg);
         if (!message) return;
 
@@ -457,10 +455,14 @@ app.ws("/moderation", {
                 const { data, error } = await supabase.from(config.DATABASE.TABLE).select();
                 if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
 
-                ws.send(JSON.stringify({
-                    type: "updatebanlist",
-                    data: data
-                }));
+                try {
+                    ws.send(JSON.stringify({
+                        type: "updatebanlist",
+                        data: data
+                    }));
+                } catch {
+                    return;
+                };
                 break;
             default:
                 break;
