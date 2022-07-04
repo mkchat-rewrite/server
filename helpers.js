@@ -270,7 +270,7 @@ export function attachmentParser(attachments) {
 };
 
 export function noDiscordMentions(text) {
-    return text ? text.replace(">", "").replace("<", "") : "";
+    return text ? text.replaceAll(">", "").replaceAll("<", "") : "";
 };
 
 export function parseGif(messageContent) {

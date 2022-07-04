@@ -445,6 +445,8 @@ app.ws("/moderation", {
                 break;
             case "ban":
                 break;
+            case "unban":
+                break;
             case "requestusersupdate":
                 ws.send(JSON.stringify({
                     type: "updateuserlist",

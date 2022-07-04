@@ -32,7 +32,7 @@ ws.onmessage = async msg => {
             await loadUsers(message.data);
             break;
         case "updatebanlist":
-            console.log(message.data);
+            await loadBans(message.data);
             break;
         default:
             break;
@@ -185,7 +185,7 @@ async function loadBans(bans) {
         ipValue.classList.add("value");
         ipValue.classList.add("ip-addr");
         ipValue.tabIndex = -1;
-        ipValue.innerText = user.ip;
+        ipValue.innerText = ban.ip;
 
         /* -- name -- */
 
@@ -201,25 +201,63 @@ async function loadBans(bans) {
         const nameValue = document.createElement("span");
         nameField.appendChild(nameValue);
         nameValue.classList.add("value");
-        nameValue.innerText = user.username;
+        nameValue.innerText = ban.username;
 
-        /* -- id -- */
+        /* -- reason -- */
 
-        const idField = document.createElement("div");
-        entryData.appendChild(idField);
-        idField.classList.add("field-value");
+        const reasonField = document.createElement("div");
+        entryData.appendChild(reasonField);
+        reasonField.classList.add("field-value");
 
-        const idLabel = document.createElement("span");
-        idField.appendChild(idLabel);
-        idLabel.classList.add("field");
-        idLabel.innerText = "ID: ";
+        const reasonLabel = document.createElement("span");
+        reasonField.appendChild(reasonLabel);
+        reasonLabel.classList.add("field");
+        reasonLabel.innerText = "Reason: ";
 
-        const idValue = document.createElement("span");
-        idField.appendChild(idValue);
-        idValue.classList.add("value");
-        idValue.innerText = user.id;
+        const reasonValue = document.createElement("span");
+        reasonField.appendChild(reasonValue);
+        reasonValue.classList.add("value");
+        reasonValue.innerText = ban.reason;
 
-        /* -------- */
+        /* -- length -- */
+
+        const lengthField = document.createElement("div");
+        entryData.appendChild(lengthField);
+        lengthField.classList.add("field-value");
+
+        const lengthLabel = document.createElement("span");
+        lengthField.appendChild(lengthLabel);
+        lengthLabel.classList.add("field");
+        lengthLabel.innerText = "Length: ";
+
+        const lengthValue = document.createElement("span");
+        lengthField.appendChild(lengthValue);
+        lengthValue.classList.add("value");
+        lengthValue.innerText = ban.length;
+
+        /* -- ban date -- */
+
+        const dateField = document.createElement("div");
+        entryData.appendChild(dateField);
+        dateField.classList.add("field-value");
+
+        const dateLabel = document.createElement("span");
+        dateField.appendChild(dateLabel);
+        dateLabel.classList.add("field");
+        dateLabel.innerText = "Ban Date: ";
+
+        const dateValue = document.createElement("span");
+        dateField.appendChild(dateValue);
+        dateValue.classList.add("value");
+        dateValue.innerText = ban.date;
+
+        const unbanBtn = document.createElement("button");
+        unbanBtn.classList.add("btn");
+        unbanBtn.classList.add("btn-primary");
+        unbanBtn.classList.add("btn-full");
+        unbanBtn.innerText = "Revoke Ban";
+
+        entry.appendChild(unbanBtn);
     };
 };
 

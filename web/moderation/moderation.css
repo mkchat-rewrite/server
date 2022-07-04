@@ -118,6 +118,10 @@ input[type=text]:active {
     justify-content: space-between;
 }
 
+.entry .btn-full {
+    width: 100%;
+}
+
 .btn-group .btn {
     width: 48%;
 }
