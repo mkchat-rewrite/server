@@ -190,13 +190,13 @@ export function getStickerUrl(sticker) {
 
     switch(sticker.formatType) {
         case 1:
-            result.url = `https://proxy.mkchat.app/stickers/${sticker.id}.webp`;
+            result.url = `${config.PROXY_URL}/stickers/${sticker.id}.webp`;
             break;
         case 2:
-            result.url = `https://proxy.mkchat.app/stickers/${sticker.id}.png`;
+            result.url = `${config.PROXY_URL}/stickers/${sticker.id}.png`;
             break;
         case 3:
-            result.url = `https://proxy.mkchat.app/lottiesticker/${sticker.id}`;
+            result.url = `${config.PROXY_URL}/lottiesticker/${sticker.id}`;
             break;
     };
 
@@ -210,8 +210,8 @@ export async function getAvatarUrl(bot, author) {
     });
     const avatarId = discordAv.split("/")[5].split(".png")[0];
 
-    const { statusCode } = await request(`https://proxy.mkchat.app/avatars/${author.id}/${avatarId}.gif`);
-    return `https://proxy.mkchat.app/avatars/${author.id}/${avatarId}.${statusCode === 200 ? "gif" : "webp"}`;
+    const { statusCode } = await request(`${config.PROXY_URL}/avatars/${author.id}/${avatarId}.gif`);
+    return `${config.PROXY_URL}/avatars/${author.id}/${avatarId}.${statusCode === 200 ? "gif" : "webp"}`;
 };
 
 export function iteratorToArr(iterator) {
@@ -246,7 +246,7 @@ export function parseEmoji(text) {
         const id = emoji.match(/[0-9]{18}/g);
         const format = emoji.startsWith("&lt;a") ? "gif" : "png";
 
-        text = text.replace(emoji, `<img class="discordEmoji" src="https://proxy.mkchat.app/emojis/${id}.${format}" alt="discord emoji" style="height: 1.375em; width: 1.375em;" />`);
+        text = text.replace(emoji, `<img class="discordEmoji" src="${config.PROXY_URL}/emojis/${id}.${format}" alt="discord emoji" style="height: 1.375em; width: 1.375em;" />`);
     };
       
     return text;
@@ -260,9 +260,9 @@ export function attachmentParser(attachments) {
     
     for (const attachment of attachments) {
         if (videoFormats.includes(attachment.url.slice(-3))) {
-            result += `<video controls><source src="${attachment.url.replace('https://cdn.discordapp.com', 'https://proxy.mkchat.app')}" style="width: ${attachment.width}px; height: ${attachment.height}px;" type=${attachment.content_type} /></video>`;
+            result += `<video controls><source src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL)}" style="width: ${attachment.width}px; height: ${attachment.height}px;" type=${attachment.content_type} /></video>`;
         } else {
-            result += `<img src="${attachment.url.replace('https://cdn.discordapp.com', 'https://proxy.mkchat.app')}" alt="${attachment.filename}" style="width: ${attachment.width}px; height: ${attachment.height}px;" />`
+            result += `<img src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL)}" alt="${attachment.filename}" style="width: ${attachment.width}px; height: ${attachment.height}px;" />`
         };
     };
 
