@@ -2,7 +2,7 @@ export default Object.freeze({
     TOKEN: "OTkxMDU4OTY0NTkyNjE1NDk0.GTU5lJ.u8lCnPz2cjCA8_e3ztKKj-AaHZ3thEGrxop3rA",
     PORT: process.env.PORT || 3000,
     HOST: process.env.HOST || "0.0.0.0",
-    PROXY_URL: "https://proxy.mkchat.app",
+    PROXY_URL: "https://rail-proxy.mkchat.app",
     BOT_PREFIX: "m?",
     JOIN_WEBHOOK_URL: "https://discord.com/api/webhooks/991068364648628234/kSUVEGyGaRr8oytbbtEFJNAq8ISdaF-f8M_YKaqMvV32LZ-ivwGWv2ATobOBK0-3MrQO",
     ACTION_WEBHOOK_URL: "https://discord.com/api/webhooks/991068566021341185/Xv4alF0JL6vK8ayyU09LAZY8gi2gZjWI5JqXgcYi-ApCye7Yj7_4cQQKZvNJ0wLG13RO",
