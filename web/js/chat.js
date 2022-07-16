@@ -1,12 +1,12 @@
-const SERVER_URL = window.location.host;
-const ws = new WebSocket(`wss://${SERVER_URL}`);
+const searchParams = new URLSearchParams(window.location.search);
+const params = Object.fromEntries(searchParams.entries());
+
+const SERVER_URL = params.isDev ? "ws://localhost:1337" : `wss://${window.location.host}`;
+const ws = new WebSocket(SERVER_URL);
 
 ws.onopen = () => {
     logger.info("Websocket Connection Opened");
 };
-
-const searchParams = new URLSearchParams(window.location.search);
-const params = Object.fromEntries(searchParams.entries());
 
 if (!params.name || !params.room) window.location.replace("/");
 
