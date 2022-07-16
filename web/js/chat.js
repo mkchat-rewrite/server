@@ -16,7 +16,7 @@ ws.onmessage = msg => {
         case "connect":
             const id = message.id;
 
-            fetch(`https://${SERVER_URL}/join/${id}?name=${params.name}&room=${params.room}`).then(res => res.text()).then(data => {
+            fetch(`https://${window.location.host}/join/${id}?name=${params.name}&room=${params.room}`).then(res => res.text()).then(data => {
                 if (data != "ok") return disconnect(data);
 
                 ws.send(JSON.stringify({ type: "join" }));
