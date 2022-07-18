@@ -179,7 +179,7 @@ function getColor(user) {
 function getAvatar(user) {
     const color = getColor(user);
 
-    return `https://proxy.mkchat.app/genericavatars/${user}.svg?b=${color.replace("#", "%23")}`;
+    return `https://proxy.mkchat.app/dicebear/avatars/${user}.svg?b=${color.replace("#", "%23")}`;
     // 🎲🐻
 };
 
