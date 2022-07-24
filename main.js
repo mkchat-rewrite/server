@@ -370,6 +370,9 @@ app.get("/motd", async (reply, req) => {
     const motds = (await fs.readFile("./motds.txt", "utf-8")).split("\n");
     const motd = motds[Math.floor(Math.random() * motds.length)];
 
+    reply.writeHeader("Access-Control-Allow-Origin", "*");
+    reply.writeHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+
     reply.writeStatus("200").end(motd);
 });
 
