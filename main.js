@@ -101,11 +101,9 @@ app.ws("/*", {
 
         const ips = req.getHeader("x-forwarded-for").split(", ");
         const ip = ips[0];
-
-        // console.log(ip); // not intended to be used long-term, just testing for some future changes to how connections take place
     
         reply.upgrade(
-            { addr: ip, url: req.getUrl() },
+            { remoteAddress: ip, url: req.getUrl() },
             req.getHeader("sec-websocket-key"),
             req.getHeader("sec-websocket-protocol"),
             req.getHeader("sec-websocket-extensions"),
@@ -115,15 +113,12 @@ app.ws("/*", {
     open: ws => {
         ws.id = nanoid(16);
 
-        users.set(ws.id, { disconnect: () => { 
-            try {
+        users.set(ws.id, {
+            ip: ws.remoteAddress,
+            disconnect: function () {
                 ws.end(1, "kicked!");
-            } catch {
-                return; // might wanna pass this off to the caller at a later point to give more information to the moderator
-            };
-        } }); // value will be empty until the client sends join request to server (this is used because uws socket remoteaddress function is practically useless to us and we might as well send connect params along with it instead of via another socket message)
-
-        console.log(abToStr(ws.getRemoteAddressAsText()), ws.addr);
+            }
+        });
 
         ws.send(JSON.stringify({
             type: "connect",
@@ -224,54 +219,54 @@ app.ws("/*", {
 registerWebAssets("web"); // registers endpoints to serve client code at root
 
 app.get("/join/:id", async (reply, req) => {
-    const id = req.getParameter();
-    const ips = req.getHeader("x-forwarded-for").split(", ");
-    const ip = ips[0];
-    const query = parseQuery(req.getQuery());
-    const room = removeHtml(query.room);
-    const userlist = users.list(room);
-    const name = query.name;
+    // const id = req.getParameter();
+    // const ips = req.getHeader("x-forwarded-for").split(", ");
+    // const ip = ips[0];
+    // const query = parseQuery(req.getQuery());
+    // const room = removeHtml(query.room);
+    // const userlist = users.list(room);
+    // const name = query.name;
 
-    reply.onAborted(() => {
-        reply.aborted = true;
-    });
+    // reply.onAborted(() => {
+    //     reply.aborted = true;
+    // });
 
-    if (reply.aborted) return;
+    // if (reply.aborted) return;
 
-    reply.writeHeader("Access-Control-Allow-Origin", "*");
-    reply.writeHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    //i hate cors so much
+    // reply.writeHeader("Access-Control-Allow-Origin", "*");
+    // reply.writeHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    // //i hate cors so much
 
-    const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: ip });
-    if (error) throw new Error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
-    // throwing because chat NEEDS to die once this happens because it's most likely important
+    // const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: ip });
+    // if (error) throw new Error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
+    // // throwing because chat NEEDS to die once this happens because it's most likely important
 
-    if (!users.get(id) || !ip || !name || !room) {
-        reply.write("err");
-    } else if (userlist.includes(name)) {
-        reply.write("username taken");
-    } else if (!checkName(name)) {
-        reply.write("username invalid");
-    } else if (Array.isArray(data) && data[0]) {
-        reply.write("you are banned");
-    } else if (name.length > 30) {
-        reply.write("username too long");
-    } else {
-        const existingUserData = users.get(id);
+    // if (!users.get(id) || !ip || !name || !room) {
+    //     reply.write("err");
+    // } else if (userlist.includes(name)) {
+    //     reply.write("username taken");
+    // } else if (!checkName(name)) {
+    //     reply.write("username invalid");
+    // } else if (Array.isArray(data) && data[0]) {
+    //     reply.write("you are banned");
+    // } else if (name.length > 30) {
+    //     reply.write("username too long");
+    // } else {
+    //     const existingUserData = users.get(id);
 
-        const user = {
-            username: name,
-            ip,
-            room: room
-        };
+    //     const user = {
+    //         username: name,
+    //         ip,
+    //         room: room
+    //     };
         
-        users.set(id, { ...user, ...existingUserData });
-        persistentUsers.set(id, { ...user, ...existingUserData, id });
+    //     users.set(id, { ...user, ...existingUserData });
+    //     persistentUsers.set(id, { ...user, ...existingUserData, id });
     
-        reply.write("ok");
-    }; // *cough* yandere dev technique
+    //     reply.write("ok");
+    // }; // *cough* yandere dev technique
     
-    reply.end();
+    // reply.end();
 });
 
 app.get("/modlogin", (reply, req) => {
