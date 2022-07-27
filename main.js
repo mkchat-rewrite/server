@@ -102,10 +102,10 @@ app.ws("/*", {
         const ips = req.getHeader("x-forwarded-for").split(", ");
         const ip = ips[0];
 
-        console.log(ip); // not intended to be used long-term, just testing for some future changes to how connections take place
+        // console.log(ip); // not intended to be used long-term, just testing for some future changes to how connections take place
     
         reply.upgrade(
-            { url: req.getUrl() },
+            { addr: ip, url: req.getUrl() },
             req.getHeader("sec-websocket-key"),
             req.getHeader("sec-websocket-protocol"),
             req.getHeader("sec-websocket-extensions"),
@@ -123,7 +123,7 @@ app.ws("/*", {
             };
         } }); // value will be empty until the client sends join request to server (this is used because uws socket remoteaddress function is practically useless to us and we might as well send connect params along with it instead of via another socket message)
 
-        console.log(abToStr(ws.getRemoteAddressAsText()));
+        console.log(abToStr(ws.getRemoteAddressAsText()), ws.addr);
 
         ws.send(JSON.stringify({
             type: "connect",
