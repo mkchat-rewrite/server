@@ -129,32 +129,37 @@ app.ws("/*", {
         const message = parseMessage(msg);
         if (!message) return;
 
-        const user = users.get(ws.id);
-        const room = user.room;
+        const userData = users.get(ws.id);
+        const room = userData.room;
         const channel = config.CHANNELS[room];
 
-        const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: user.ip });
+        const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: userData.ip });
         if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
 
         if (Array.isArray(data) && data[0]) return ws.end(1, "you are banned");
 
         switch(message.type) {
-            case "join":                
-                if (!(user.username || user.ip || user.room)) return ws.end(1, "invalid join data"); // incase the join http request from client fails for whatever reason, todo: find out why client doesnt receive close message
+            case "join":
+                console.log(message.data.username, message.data.room);
+                // if (!(user.username || user.ip || user.room)) return ws.end(1, "invalid join data"); // incase the join http request from client fails for whatever reason, todo: find out why client doesnt receive close message
+
+                const user = users.set(ws.id, { ...userData, username: message.data.username, room: message.data.room });
+
+                console.log(user);
 
                 try {
-                    ws.send(buildServerMessage(`Welcome to room: ${room}`));
+                    ws.send(buildServerMessage(`Welcome to room: ${user.room}`));
                 } catch {
                     return; // ahhhhhh
                 };
 
-                ws.subscribe(`rooms/${room}`); // connects the client to desired room
+                ws.subscribe(`rooms/${user.room}`); // connects the client to desired room
 
-                ws.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.SUCCESS};">${filterName(user.username)} has joined!</span>`));
+                ws.publish(`rooms/${user.room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.SUCCESS};">${filterName(user.username)} has joined!</span>`));
 
-                app.publish(`rooms/${room}`, JSON.stringify({
+                app.publish(`rooms/${user.room}`, JSON.stringify({
                     type: "updateusers",
-                    users: users.list(room)
+                    users: users.list(user.room)
                 }));
 
                 if (channel) await sendMessage(bot, channel, {

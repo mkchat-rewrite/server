@@ -1,5 +1,5 @@
 {
-  "name": "mkchat",
+  "name": "mkchat_server",
   "version": "1.0.0",
   "main": "main.js",
   "type": "module",
@@ -9,13 +9,13 @@
   },
   "author": "Created by themkdev, rewritten by distrust",
   "dependencies": {
-    "@supabase/supabase-js": "^1.30.7",
+    "@supabase/supabase-js": "^1.35.4",
     "discordeno": "^13.0.0-rc35",
     "fast-ratelimit": "^3.0.0",
     "lite-meta-scraper": "^1.0.5",
     "mime-types": "^2.1.35",
-    "nanoid": "^3.2.0",
-    "undici": "^5.5.1",
+    "nanoid": "^4.0.0",
+    "undici": "^5.8.0",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.10.0"
   }
 }

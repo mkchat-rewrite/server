@@ -1,7 +1,7 @@
 const searchParams = new URLSearchParams(window.location.search);
 const params = Object.fromEntries(searchParams.entries());
 
-const SERVER_URL = params.isDev ? "ws://localhost:1337" : `wss://${window.location.host}`;
+const SERVER_URL = `ws://${window.location.host}`;
 const ws = new WebSocket(SERVER_URL);
 
 ws.onopen = () => {
