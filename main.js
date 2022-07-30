@@ -172,7 +172,7 @@ app.ws("/*", {
                 logJoin(user.username, user.ip, ws.id, user.room); //name, ip, id, room
                 break;
             case "message":
-                if (message.text.length > 250) return;
+                if (message?.text?.length > 250) return;
                 
                 // published globally to the room through app instead of by the user socket, so the client recieves it's own message back and the message is equally mirrored across all clients
                 ratelimit.consume(ws.id).then(() => {
