@@ -130,22 +130,34 @@ app.ws("/*", {
         if (!message) return;
 
         const userData = users.get(ws.id);
-        const room = userData.room;
+        const room = userData?.room;
         const channel = config.CHANNELS[room];
 
         const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: userData.ip });
         if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
+        // throwing because chat NEEDS to die once this happens because it's most likely important
 
         if (Array.isArray(data) && data[0]) return ws.end(1, "you are banned");
 
         switch(message.type) {
             case "join":
-                console.log(message.data.username, message.data.room);
-                // if (!(user.username || user.ip || user.room)) return ws.end(1, "invalid join data"); // incase the join http request from client fails for whatever reason, todo: find out why client doesnt receive close message
+                const username = message?.data?.username;
+                const userRoom = message?.data?.room;
+                const userlist = users.list(userRoom);
 
-                const user = users.set(ws.id, { ...userData, username: message.data.username, room: message.data.room });
+                if (/*!user?.ip ||*/ !username || !userRoom) {
+                    ws.end(1, "invalid join data");
+                } else if (userlist.includes(username)) {
+                    ws.end(1, "username taken");
+                } else if (!checkName(username)) {
+                    ws.end(1, "username invalid");
+                } else if (username?.length > 30) {
+                    ws.end(1, "username too long");
+                };
 
-                console.log(user);
+                users.set(ws.id, { ...userData, username, room: userRoom });
+                const user = users.get(ws.id);
+                persistentUsers.set(ws.id, { ...user, id: ws.id });
 
                 try {
                     ws.send(buildServerMessage(`Welcome to room: ${user.room}`));
@@ -222,57 +234,6 @@ app.ws("/*", {
 });
 
 registerWebAssets("web"); // registers endpoints to serve client code at root
-
-app.get("/join/:id", async (reply, req) => {
-    // const id = req.getParameter();
-    // const ips = req.getHeader("x-forwarded-for").split(", ");
-    // const ip = ips[0];
-    // const query = parseQuery(req.getQuery());
-    // const room = removeHtml(query.room);
-    // const userlist = users.list(room);
-    // const name = query.name;
-
-    // reply.onAborted(() => {
-    //     reply.aborted = true;
-    // });
-
-    // if (reply.aborted) return;
-
-    // reply.writeHeader("Access-Control-Allow-Origin", "*");
-    // reply.writeHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    // //i hate cors so much
-
-    // const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: ip });
-    // if (error) throw new Error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
-    // // throwing because chat NEEDS to die once this happens because it's most likely important
-
-    // if (!users.get(id) || !ip || !name || !room) {
-    //     reply.write("err");
-    // } else if (userlist.includes(name)) {
-    //     reply.write("username taken");
-    // } else if (!checkName(name)) {
-    //     reply.write("username invalid");
-    // } else if (Array.isArray(data) && data[0]) {
-    //     reply.write("you are banned");
-    // } else if (name.length > 30) {
-    //     reply.write("username too long");
-    // } else {
-    //     const existingUserData = users.get(id);
-
-    //     const user = {
-    //         username: name,
-    //         ip,
-    //         room: room
-    //     };
-        
-    //     users.set(id, { ...user, ...existingUserData });
-    //     persistentUsers.set(id, { ...user, ...existingUserData, id });
-    
-    //     reply.write("ok");
-    // }; // *cough* yandere dev technique
-    
-    // reply.end();
-});
 
 app.get("/modlogin", (reply, req) => {
     const query = parseQuery(req.getQuery());
