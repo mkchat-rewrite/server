@@ -119,11 +119,6 @@ app.ws("/*", {
                 ws.end(1, "kicked!");
             }
         });
-
-        ws.send(JSON.stringify({
-            type: "connect",
-            id: ws.id
-        }));
     },
     message: async (ws, msg, _isBinary) => {
         const message = parseMessage(msg);
@@ -166,6 +161,11 @@ app.ws("/*", {
                 };
 
                 ws.subscribe(`rooms/${user.room}`); // connects the client to desired room
+
+                ws.send(JSON.stringify({
+                    type: "connect",
+                    id: ws.id
+                }));
 
                 ws.publish(`rooms/${user.room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.SUCCESS};">${filterName(user.username)} has joined!</span>`));
 
