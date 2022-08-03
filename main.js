@@ -100,6 +100,8 @@ app.ws("/*", {
     upgrade: (reply, req, context) => {
         const ips = req.getHeader("x-forwarded-for").split(", ");
         const ip = ips[0];
+
+        console.log(ips, ip);
     
         reply.upgrade(
             { remoteAddress: ip, url: req.getUrl() },
