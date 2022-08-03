@@ -53,9 +53,10 @@ const bot = createBot({
                 app.publish(`rooms/${room}`, buildMessage({
                     author: user.username,
                     text: await parseGif(filterMessage(message.content)) + attachmentParser(message.attachments),
-                    badge: config.MOD_IDS.includes(message.authorId) ? "Chat Staff" : "Discord User",
+                    badge: config.MOD_IDS.includes(message.authorId) ? "<i class='fa-solid fa-shield'></i> Moderator" : "<i class='fa-brands fa-discord'></i> Discord User",
                     sticker: sticker ? getStickerUrl(sticker) : null,
-                    avatar: await getAvatarUrl(bot, user)
+                    avatar: await getAvatarUrl(bot, user),
+                    color: getColor(user.username)
                 }));
             };
 
@@ -97,8 +98,6 @@ app.ws("/*", {
     idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason every 2 minutes
 
     upgrade: (reply, req, context) => {
-        console.log(`http upgrading to ws, URL: ${req.getUrl()}`);
-
         const ips = req.getHeader("x-forwarded-for").split(", ");
         const ip = ips[0];
     
@@ -126,7 +125,6 @@ app.ws("/*", {
 
         const userData = users.get(ws.id);
         const room = userData?.room;
-        const channel = config.CHANNELS[room];
 
         const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: userData.ip });
         if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
@@ -139,6 +137,7 @@ app.ws("/*", {
                 const username = message?.data?.username;
                 const userRoom = message?.data?.room;
                 const userlist = users.list(userRoom);
+                const channel = config.CHANNELS[userRoom];
 
                 if (/*!user?.ip ||*/ !username || !userRoom) {
                     ws.end(1, "invalid join data");
@@ -150,7 +149,7 @@ app.ws("/*", {
                     ws.end(1, "username too long");
                 };
 
-                users.set(ws.id, { ...userData, username, room: userRoom });
+                users.set(ws.id, { ...userData, username, avatar: getAvatar(username), room: userRoom });
                 const user = users.get(ws.id);
                 persistentUsers.set(ws.id, { ...user, id: ws.id });
 
@@ -188,13 +187,15 @@ app.ws("/*", {
                 
                 // published globally to the room through app instead of by the user socket, so the client recieves it's own message back and the message is equally mirrored across all clients
                 ratelimit.consume(ws.id).then(() => {
-                    app.publish(`rooms/${room}`, buildMessage({
-                        author: filterName(user.username),
-                        text: filterMessage(message.text)
+                    app.publish(`rooms/${users.get(ws.id).room}`, buildMessage({
+                        author: filterName(users.get(ws.id).username),
+                        text: filterMessage(message.text),
+                        avatar: users.get(ws.id).avatar,
+                        color: getColor(users.get(ws.id).username)
                     }));
                 }).catch(() => { /* message gets eaten 😋 */ });
 
-                if (channel) await sendMessage(bot, channel, { content: `**${user.username}:** ${wordFilter(noDiscordMentions(message.text))}` });
+                if (config.CHANNELS[users.get(ws.id).room]) await sendMessage(bot, config.CHANNELS[users.get(ws.id).room], { content: `**${users.get(ws.id).username}:** ${wordFilter(noDiscordMentions(message.text))}` });
                 break;
             case "kickme":
                 user.disconnect();
@@ -444,3 +445,20 @@ app.ws("/moderation", {
         moderators.delete(ws.id);
     }
 });
+
+
+function getColor(key) {
+    let hash = key.length;
+    for (let i = 0; i < key.length; i++) {
+        hash = key.charCodeAt(i) + (hash << 5) - hash;
+    };
+
+    const res = Math.abs(hash % 255);
+
+    const color = ["FF", "99", res.toString(16)].map(c => c.padStart(2, c)).sort(() => 0.5 - res / 255).join("");
+    return "#" + color;
+};
+
+function getAvatar(key) {
+    return `https://rail-proxy.mkchat.app/dicebear/avatars/${key}.svg?b=${getColor(key).replace("#", "%23")}`;
+};

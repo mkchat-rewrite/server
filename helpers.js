@@ -63,13 +63,14 @@ export function removeHtml(text) {
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/`/g, "&#x60;").replace(/\(/g, "&#40;").replace(/\)/g, "&#41;");
 };
 
-export function buildMessage({ author, text, badge, avatar, sticker }) {
+export function buildMessage({ author, text, badge, avatar, color, sticker }) {
     return JSON.stringify({
         type: "message",
         author,
         text,
         badge,
         avatar,
+        color,
         sticker,
         date: new Date()
     });
@@ -79,8 +80,9 @@ export function buildServerMessage(text) {
     return buildMessage({
         author: "SERVER",
         text: text,
-        badge: "system",
-        avatar: "https://mkchat.app/imgs/favicon.png"
+        badge: "<i class='fa-solid fa-robot'></i> System",
+        avatar: "https://mkchat.app/imgs/favicon.png",
+        color: "#ffffff"
     });
 };
 
@@ -190,13 +192,13 @@ export function getStickerUrl(sticker) {
 
     switch(sticker.formatType) {
         case 1:
-            result.url = `${config.PROXY_URL}/stickers/${sticker.id}.webp`;
+            result.url = `${config.PROXY_URL}/discord/stickers/${sticker.id}.webp`;
             break;
         case 2:
-            result.url = `${config.PROXY_URL}/stickers/${sticker.id}.png`;
+            result.url = `${config.PROXY_URL}/discord/stickers/${sticker.id}.png`;
             break;
         case 3:
-            result.url = `${config.PROXY_URL}/lottiesticker/${sticker.id}`;
+            result.url = `${config.PROXY_URL}/discord/lottiesticker/${sticker.id}`;
             break;
     };
 
@@ -210,8 +212,8 @@ export async function getAvatarUrl(bot, author) {
     });
     const avatarId = discordAv.split("/")[5].split(".png")[0];
 
-    const { statusCode } = await request(`${config.PROXY_URL}/avatars/${author.id}/${avatarId}.gif`);
-    return `${config.PROXY_URL}/avatars/${author.id}/${avatarId}.${statusCode === 200 ? "gif" : "webp"}`;
+    const { statusCode } = await request(`${config.PROXY_URL}/discord/avatars/${author.id}/${avatarId}.gif`);
+    return `${config.PROXY_URL}/discord/avatars/${author.id}/${avatarId}.${statusCode === 200 ? "gif" : "webp"}`;
 };
 
 export function iteratorToArr(iterator) {
@@ -246,7 +248,7 @@ export function parseEmoji(text) {
         const id = emoji.match(/[0-9]{18}/g);
         const format = emoji.startsWith("&lt;a") ? "gif" : "png";
 
-        text = text.replace(emoji, `<img class="discordEmoji" src="${config.PROXY_URL}/emojis/${id}.${format}" alt="discord emoji" style="height: 1.375em; width: 1.375em;" />`);
+        text = text.replace(emoji, `<img class="discordEmoji" src="${config.PROXY_URL}/discord/emojis/${id}.${format}" alt="discord emoji" style="height: 1.375em; width: 1.375em;" />`);
     };
       
     return text;
@@ -260,9 +262,9 @@ export function attachmentParser(attachments) {
     
     for (const attachment of attachments) {
         if (videoFormats.includes(attachment.url.slice(-3))) {
-            result += `<video controls><source src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL)}" style="width: ${attachment.width}px; height: ${attachment.height}px;" type=${attachment.content_type} /></video>`;
+            result += `<video controls><source src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" style="width: ${attachment.width}px; height: ${attachment.height}px;" type=${attachment.content_type} /></video>`;
         } else {
-            result += `<img src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL)}" alt="${attachment.filename}" style="width: ${attachment.width}px; height: ${attachment.height}px;" />`
+            result += `<img src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" alt="${attachment.filename}" style="width: ${attachment.width}px; height: ${attachment.height}px;" />`
         };
     };
 
