@@ -98,7 +98,7 @@ app.ws("/*", {
     idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason every 2 minutes
 
     upgrade: (reply, req, context) => {
-        const ips = req.getHeader("x-forwarded-for").split(", ");
+        const ips = req.getHeader("x-forwarded-for").split(",");
         const ip = ips[0];
 
         console.log(ips, ip);
