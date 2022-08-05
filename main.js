@@ -5,8 +5,9 @@ import { startBot, createBot, sendMessage, addRole, removeRole, getUser, Intents
 import { nanoid } from "nanoid";
 import { FastRateLimit } from "fast-ratelimit";
 import { createClient } from "@supabase/supabase-js";
-import { abToStr, parseMessage, parseQuery, filterName, checkName, filterMessage, removeHtml, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom } from "./helpers.js";
+import { parseMessage, parseQuery, filterName, checkName, filterMessage, removeHtml, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom } from "./helpers.js";
 import config from "./config.js";
+import { fileTypeFromBuffer } from "file-type";
 
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
 const app = uws.App();
@@ -96,12 +97,12 @@ const bot = createBot({
 
 app.ws("/*", {
     idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason every 2 minutes
+    compression: uws.SHARED_COMPRESSOR,
+    maxPayloadLength: 4096 * 4096,
 
     upgrade: (reply, req, context) => {
         const ips = req.getHeader("x-forwarded-for").split(",");
         const ip = ips[0];
-
-        console.log(ips, ip);
     
         reply.upgrade(
             { remoteAddress: ip, url: req.getUrl() },
@@ -123,7 +124,6 @@ app.ws("/*", {
     },
     message: async (ws, msg, _isBinary) => {
         const message = parseMessage(msg);
-        if (!message) return;
 
         const userData = users.get(ws.id);
         const room = userData?.room;
@@ -186,12 +186,27 @@ app.ws("/*", {
                 break;
             case "message":
                 if (message?.text?.length > 250) return;
-                
+
+                const messageFile = message?.file;
+                let attachment = "";
+
+                if (messageFile) {
+                    const fileBuffer = new Buffer.from(messageFile, "binary");
+                    const fileData = await fileTypeFromBuffer(fileBuffer);
+                    const mediaFormats = [ "png", "jpg", "jpeg", "gif", "mp4", "mov", "wmv", "ebm", "mkv", "m4v" ];
+
+                    if (fileData && mediaFormats.includes(fileData?.ext)) {
+                        attachment = `<img src="data:${fileData.mime};base64,${fileBuffer.toString("base64")}" alt="attachment" />`;
+                    };
+                };
+
+                // `<img src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" alt="${attachment.filename}" style="width: ${attachment.width}px; height: ${attachment.height}px;" />`
+
                 // published globally to the room through app instead of by the user socket, so the client recieves it's own message back and the message is equally mirrored across all clients
                 ratelimit.consume(ws.id).then(() => {
                     app.publish(`rooms/${users.get(ws.id).room}`, buildMessage({
                         author: filterName(users.get(ws.id).username),
-                        text: filterMessage(message.text),
+                        text: filterMessage(message.text) + attachment,
                         avatar: users.get(ws.id).avatar,
                         color: getColor(users.get(ws.id).username)
                     }));

@@ -13,7 +13,8 @@ export function abToStr(buf) {
 export function parseMessage(msg) {
     try {
         return JSON.parse(abToStr(msg));
-    } catch {
+    } catch (err) {
+        console.log(err);
         return null;
     };
 };
