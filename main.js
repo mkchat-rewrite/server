@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { parseMessage, parseQuery, filterName, checkName, filterMessage, removeHtml, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom } from "./helpers.js";
 import config from "./config.js";
 import { fileTypeFromBuffer } from "file-type";
+import { Blob } from "fetch-blob";
 
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
 const app = uws.App();
@@ -193,14 +194,17 @@ app.ws("/*", {
                 if (messageFile) {
                     const fileBuffer = new Buffer.from(messageFile, "binary");
                     const fileData = await fileTypeFromBuffer(fileBuffer);
-                    const mediaFormats = [ "png", "jpg", "jpeg", "gif", "mp4", "mov", "wmv", "ebm", "mkv", "m4v" ];
+                    const videoFormats = [ "mp4", "mov", "wmv", "ebm", "mkv", "m4v" ];
+                    const imageFormats = [ "png", "jpg", "jpeg", "gif" ];
 
-                    if (fileData && mediaFormats.includes(fileData?.ext)) {
-                        attachment = `<img src="data:${fileData.mime};base64,${fileBuffer.toString("base64")}" alt="attachment" />`;
+                    if (!fileData) {
+                        return;
+                    } else if (videoFormats.includes(fileData.ext)) {
+                        attachment = `<video class="attachment" alt="attachment" controls><source src="data:${fileData.mime};base64,${fileBuffer.toString("base64")}" type="${fileData.mime}" /></video>`;
+                    } else if (imageFormats.includes(fileData.ext)) {
+                        attachment = `<img src="data:${fileData.mime};base64,${fileBuffer.toString("base64")}" class="attachment" alt="attachment">`;
                     };
                 };
-
-                // `<img src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" alt="${attachment.filename}" style="width: ${attachment.width}px; height: ${attachment.height}px;" />`
 
                 // published globally to the room through app instead of by the user socket, so the client recieves it's own message back and the message is equally mirrored across all clients
                 ratelimit.consume(ws.id).then(() => {
@@ -212,7 +216,13 @@ app.ws("/*", {
                     }));
                 }).catch(() => { /* message gets eaten 😋 */ });
 
-                if (config.CHANNELS[users.get(ws.id).room]) await sendMessage(bot, config.CHANNELS[users.get(ws.id).room], { content: `**${users.get(ws.id).username}:** ${wordFilter(noDiscordMentions(message.text))}` });
+                if (config.CHANNELS[users.get(ws.id).room]) await sendMessage(bot, config.CHANNELS[users.get(ws.id).room], {
+                    content: `**${users.get(ws.id).username}:** ${wordFilter(noDiscordMentions(message.text))}`,
+                    // file: {
+                    //     blob: new Blob(new Buffer.from(messageFile, "binary"), { type: "image/gif" }),
+                    //     name: "attachment.gif"
+                    // }
+                });
                 break;
             case "kickme":
                 user.disconnect();

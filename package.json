@@ -12,6 +12,7 @@
     "@supabase/supabase-js": "^1.35.4",
     "discordeno": "^13.0.0-rc35",
     "fast-ratelimit": "^3.0.0",
+    "fetch-blob": "^3.2.0",
     "file-type": "^17.1.6",
     "lite-meta-scraper": "^1.0.5",
     "mime-types": "^2.1.35",

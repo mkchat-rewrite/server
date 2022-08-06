@@ -265,7 +265,7 @@ export function attachmentParser(attachments) {
         if (videoFormats.includes(attachment.url.slice(-3))) {
             result += `<video controls><source src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" style="width: ${attachment.width}px; height: ${attachment.height}px;" type=${attachment.content_type} /></video>`;
         } else {
-            result += `<img src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" alt="${attachment.filename}" style="width: ${attachment.width}px; height: ${attachment.height}px;" />`
+            result += `<img src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" class="attachment" alt="${attachment.filename}" style="width: ${attachment.width}px; height: ${attachment.height}px;" />`
         };
     };
 
