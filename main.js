@@ -475,6 +475,7 @@ app.ws("/moderation", {
 
 
 function getColor(key) {
+    if (!key || !key.hasOwnProperty("length")) return "";
     let hash = key.length;
     for (let i = 0; i < key.length; i++) {
         hash = key.charCodeAt(i) + (hash << 5) - hash;
@@ -489,3 +490,7 @@ function getColor(key) {
 function getAvatar(key) {
     return `https://rail-proxy.mkchat.app/dicebear/avatars/${key}.svg?b=${getColor(key).replace("#", "%23")}`;
 };
+
+function handleDisconnect() {
+    
+}
