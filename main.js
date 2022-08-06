@@ -195,7 +195,7 @@ app.ws("/*", {
                     const fileBuffer = new Buffer.from(messageFile, "binary");
                     const fileData = await fileTypeFromBuffer(fileBuffer);
                     const videoFormats = [ "mp4", "mov", "wmv", "ebm", "mkv", "m4v" ];
-                    const imageFormats = [ "png", "jpg", "jpeg", "gif" ];
+                    const imageFormats = [ "png", "apng", "jpg", "jpeg", "gif" ];
 
                     if (!fileData) {
                         return;
