@@ -144,7 +144,7 @@ app.ws("/*", {
                 const userlist = users.list(userRoom);
                 const channel = config.CHANNELS[userRoom];
 
-                if (!user?.ip || !username || !userRoom) {
+                if (!userData?.ip || !username || !userRoom) {
                     ws.end(1, "invalid join data");
                 } else if (userlist.includes(username)) {
                     ws.end(1, "username taken");
