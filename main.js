@@ -499,7 +499,7 @@ function getColor(key) {
 };
 
 function getAvatar(key) {
-    return `https://rail-proxy.mkchat.app/dicebear/avatars/${key}.svg?b=${getColor(key).replace("#", "%23")}`;
+    return `https://rail-proxy.mkchat.app/dicebear/avatars/${new Buffer.from(key, "utf8").toString("hex")}.svg?b=${getColor(key).replace("#", "%23")}`;
 };
 
 async function acknowledgeDisconnect(username, room) {
