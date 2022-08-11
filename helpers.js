@@ -82,7 +82,7 @@ export function buildServerMessage(text) {
         author: "SERVER",
         text: text,
         badge: "<i class='fa-solid fa-robot'></i> System",
-        avatar: "https://mkchat.app/imgs/favicon.png",
+        avatar: "https://server.mkchat.app/imgs/favicon.png",
         color: "#ffffff"
     });
 };
