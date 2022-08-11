@@ -263,9 +263,9 @@ export function attachmentParser(attachments) {
     
     for (const attachment of attachments) {
         if (videoFormats.includes(attachment.url.slice(-3))) {
-            result += `<video controls><source src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" style="width: ${attachment.width}px; height: ${attachment.height}px;" type=${attachment.content_type} /></video>`;
+            result += `<video class="attachment" controls><source src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" /></video>`;
         } else {
-            result += `<img src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" class="attachment" alt="${attachment.filename}" style="width: ${attachment.width}px; height: ${attachment.height}px;" />`
+            result += `<img src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" class="attachment" alt="${attachment.filename}" />`
         };
     };
 
@@ -289,7 +289,7 @@ export function parseGif(messageContent) {
             path: tenorGifUrl.replace("https://tenor.com", "")
         }).scrape((err, data) => {
             if (err || !data?.ogUrl) res(messageContent); // stupid but idc
-            res(messageContent.replace(tenorGifUrl, `<img src="${data.ogUrl}" alt="tenor gif" style="width: ${data.ogImageWidth}px; height: ${data.ogImageHeight}px;" />`));
+            res(messageContent.replace(tenorGifUrl, `<img src="${data.ogUrl}"  alt="tenor gif" class="attachment" />`));
         });
     });
 };

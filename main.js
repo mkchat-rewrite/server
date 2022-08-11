@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import { createHash } from "crypto";
 import uws from "uWebSockets.js";
 import mime from "mime-types";
 import { startBot, createBot, sendMessage, addRole, removeRole, getUser, Intents } from "discordeno";
@@ -8,7 +9,6 @@ import { createClient } from "@supabase/supabase-js";
 import { parseMessage, parseQuery, filterName, checkName, filterMessage, removeHtml, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom } from "./helpers.js";
 import config from "./config.js";
 import { fileTypeFromBuffer } from "file-type";
-import { Blob } from "fetch-blob";
 
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
 const app = uws.App();
@@ -137,6 +137,8 @@ app.ws("/*", {
 
         switch(message.type) {
             case "join":
+                if (userData?.room) acknowledgeDisconnect(userData.username, userData.room);
+
                 const username = message?.data?.username;
                 const userRoom = message?.data?.room;
                 const userlist = users.list(userRoom);
@@ -171,6 +173,11 @@ app.ws("/*", {
 
                 ws.publish(`rooms/${user.room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.SUCCESS};">${filterName(user.username)} has joined!</span>`));
 
+                if (userData?.room) ws.publish(`rooms/${userData.room}`, JSON.stringify({
+                    type: "updateusers",
+                    users: users.list(userData.room)
+                }));
+
                 app.publish(`rooms/${user.room}`, JSON.stringify({
                     type: "updateusers",
                     users: users.list(user.room)
@@ -189,20 +196,26 @@ app.ws("/*", {
                 if (message?.text?.length > 250) return;
 
                 const messageFile = message?.file;
+                let attachmentUrl = null;
                 let attachment = "";
 
                 if (messageFile) {
                     const fileBuffer = new Buffer.from(messageFile, "binary");
                     const fileData = await fileTypeFromBuffer(fileBuffer);
-                    const videoFormats = [ "mp4", "mov", "wmv", "ebm", "mkv", "m4v" ];
+                    const videoFormats = [ "mp4", "mov", "wmv", "ebm", "mkv", "m4v", "webm" ];
                     const imageFormats = [ "png", "apng", "jpg", "jpeg", "gif" ];
 
-                    if (!fileData) {
-                        return;
-                    } else if (videoFormats.includes(fileData.ext)) {
-                        attachment = `<video class="attachment" alt="attachment" controls><source src="data:${fileData.mime};base64,${fileBuffer.toString("base64")}" type="${fileData.mime}" /></video>`;
-                    } else if (imageFormats.includes(fileData.ext)) {
-                        attachment = `<img src="data:${fileData.mime};base64,${fileBuffer.toString("base64")}" class="attachment" alt="attachment">`;
+                    if (fileData && (videoFormats.includes(fileData.ext) || imageFormats.includes(fileData.ext))) {
+                        const fileHash = createHash("sha1").update(messageFile).digest("hex");
+                        const fileName = `${fileHash}.${fileData.ext.replace("apng", "png")}`;
+                        const { data: ret, error: err } = await supabase.storage.from("attachments").upload(fileName, fileBuffer);
+                        attachmentUrl = `${config.PROXY_URL}/attachments/${fileName}`;
+
+                        if (videoFormats.includes(fileData.ext)) {
+                            attachment = `<video class="attachment" alt="attachment" controls><source src="${attachmentUrl}" type="${fileData.mime}" /></video>`;
+                        } else if (imageFormats.includes(fileData.ext)) {
+                            attachment = `<img src="${attachmentUrl}" class="attachment" alt="attachment">`;
+                        };
                     };
                 };
 
@@ -217,11 +230,7 @@ app.ws("/*", {
                 }).catch(() => { /* message gets eaten 😋 */ });
 
                 if (config.CHANNELS[users.get(ws.id).room]) await sendMessage(bot, config.CHANNELS[users.get(ws.id).room], {
-                    content: `**${users.get(ws.id).username}:** ${wordFilter(noDiscordMentions(message.text))}`,
-                    // file: {
-                    //     blob: new Blob(new Buffer.from(messageFile, "binary"), { type: "image/gif" }),
-                    //     name: "attachment.gif"
-                    // }
+                    content: `**${users.get(ws.id).username}:** ${wordFilter(noDiscordMentions(message.text))}${attachmentUrl ? `\n${attachmentUrl}` : ""}`,
                 });
                 break;
             case "kickme":
@@ -244,20 +253,22 @@ app.ws("/*", {
         users.delete(userId);
         persistentUsers.set(userId, { ...persistentUser, isDisconnected: true });
 
-        app.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.ERROR};">${filterName(user.username)} has left!</span>`));
+        acknowledgeDisconnect(user.username, room);
 
-        app.publish(`rooms/${room}`, JSON.stringify({
-            type: "updateusers",
-            users: users.list(room)
-        }));
+        // app.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.ERROR};">${filterName(user.username)} has left!</span>`));
 
-        const channel = config.CHANNELS[room];
-        if (channel) await sendMessage(bot, channel, {
-            embeds: [{
-                color: config.EMBED_COLORS.ERROR,
-                description: `**${user.username}** has left the chat!`
-            }]
-        });
+        // app.publish(`rooms/${room}`, JSON.stringify({
+        //     type: "updateusers",
+        //     users: users.list(room)
+        // }));
+
+        // const channel = config.CHANNELS[room];
+        // if (channel) await sendMessage(bot, channel, {
+        //     embeds: [{
+        //         color: config.EMBED_COLORS.ERROR,
+        //         description: `**${user.username}** has left the chat!`
+        //     }]
+        // });
     }
 });
 
@@ -491,6 +502,19 @@ function getAvatar(key) {
     return `https://rail-proxy.mkchat.app/dicebear/avatars/${key}.svg?b=${getColor(key).replace("#", "%23")}`;
 };
 
-function handleDisconnect() {
-    
-}
+async function acknowledgeDisconnect(username, room) {
+    app.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.ERROR};">${filterName(username)} has left!</span>`));
+
+    app.publish(`rooms/${room}`, JSON.stringify({
+        type: "updateusers",
+        users: users.list(room)
+    }));
+
+    const channel = config.CHANNELS[room];
+    if (channel) await sendMessage(bot, channel, {
+        embeds: [{
+            color: config.EMBED_COLORS.ERROR,
+            description: `**${username}** has left the chat!`
+        }]
+    });
+};
