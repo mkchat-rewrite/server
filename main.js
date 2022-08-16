@@ -392,7 +392,13 @@ export async function registerWebAssets(folder) {
             continue;
         };
 
-        const data = await fs.readFile(`./${folder}/${file}`);
+        let data;
+
+        try {
+            data = await fs.readFile(`./${folder}/${file}`);
+        } catch {
+            continue;
+        };
 
         const prefix = folder.replace(/(.\/web|web)/, ""); // hardcoding this makes passing folder name as param useless, but who cares
         const mimeType = mime.lookup(file);
