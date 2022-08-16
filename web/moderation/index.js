@@ -2,7 +2,7 @@
 * TODO: move most of the auth handling stuff to server
 */
 
-const SERVER_URL = "server.mkchat.app";
+const SERVER_URL = window.location.host;
 const ws = new WebSocket(`wss://${SERVER_URL}/moderation`);
 const params = Object.fromEntries((new URLSearchParams(window.location.search)).entries());
 
