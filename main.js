@@ -19,6 +19,19 @@ class UserMap extends Map {
         const result = [];
 
         for (const user of this.values()) {
+            if (user.room === room) result.push({
+                username: filterName(user.username),
+                avatar: getAvatar(user.username)
+            });
+        };
+
+        return result;
+    };
+
+    listBasic(room) {
+        const result = [];
+
+        for (const user of this.values()) {
             if (user.room === room) result.push(filterName(user.username));
         };
 
@@ -141,7 +154,7 @@ app.ws("/*", {
 
                 const username = message?.data?.username;
                 const userRoom = message?.data?.room;
-                const userlist = users.list(userRoom);
+                const userlist = users.listBasic(userRoom);
                 const channel = config.CHANNELS[userRoom];
 
                 if (!userData?.ip || !username || !userRoom) {
