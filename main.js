@@ -6,7 +6,7 @@ import { startBot, createBot, sendMessage, addRole, removeRole, getUser, Intents
 import { nanoid } from "nanoid";
 import { FastRateLimit } from "fast-ratelimit";
 import { createClient } from "@supabase/supabase-js";
-import { parseMessage, parseQuery, filterName, checkName, filterMessage, removeHtml, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom } from "./helpers.js";
+import { parseMessage, parseQuery, filterName, checkName, filterMessage, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom, isRemoteAddressAsnBan } from "./helpers.js";
 import config from "./config.js";
 import { fileTypeFromBuffer } from "file-type";
 
@@ -146,7 +146,7 @@ app.ws("/*", {
         if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
         // throwing because chat NEEDS to die once this happens because it's most likely important
 
-        if (Array.isArray(data) && data[0]) return ws.end(1, "you are banned");
+        if ((Array.isArray(data) && data[0]) || await isRemoteAddressAsnBan()) return ws.end(1, "you are banned");
 
         switch(message.type) {
             case "join":
@@ -518,7 +518,7 @@ function getColor(key) {
 };
 
 function getAvatar(key) {
-    return `https://rail-proxy.mkchat.app/dicebear/avatars/${new Buffer.from(key, "utf8").toString("hex")}.svg?b=${getColor(key).replace("#", "%23")}`;
+    return `https://rail-proxy.mkchat.app/dicebear/avatars/${new Buffer.from(key || "", "utf8").toString("hex")}.svg?b=${getColor(key).replace("#", "%23")}`;
 };
 
 async function acknowledgeDisconnect(username, room) {

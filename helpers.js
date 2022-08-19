@@ -322,3 +322,18 @@ export function fetchRoom(channelId) {
 
     return null;
 };
+
+async function isRemoteAddressAsnBan(addr) {
+    const blacklist = [
+        "AS396356" // maxihost/latitude.sh
+    ];
+
+    const { body } = await request(`http://ip-api.com/json/${addr}?fields=as`);
+    const { as: asStr } = await body.json();
+    if (!asStr) return false;
+
+    const asn = asStr.split(" ")[0];
+
+    if (blacklist.includes(asn)) return true;
+    return false;
+};

@@ -1,6 +1,6 @@
-# fly.toml file generated for snowy-glade-3854 on 2022-08-16T11:00:30-04:00
+# fly.toml file generated for misty-thunder-2272 on 2022-08-16T11:57:02-04:00
 
-app = "snowy-glade-3854"
+app = "misty-thunder-2272"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
