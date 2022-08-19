@@ -323,7 +323,7 @@ export function fetchRoom(channelId) {
     return null;
 };
 
-async function isRemoteAddressAsnBan(addr) {
+export async function isRemoteAddressAsnBan(addr) {
     const blacklist = [
         "AS396356" // maxihost/latitude.sh
     ];
