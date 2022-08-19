@@ -146,7 +146,7 @@ app.ws("/*", {
         if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
         // throwing because chat NEEDS to die once this happens because it's most likely important
 
-        if ((Array.isArray(data) && data[0]) || await isRemoteAddressAsnBan()) return ws.end(1, "you are banned");
+        if ((Array.isArray(data) && data[0]) || await isRemoteAddressAsnBan(userData.ip)) return ws.end(1, "you are banned");
 
         switch(message.type) {
             case "join":
