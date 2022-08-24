@@ -118,7 +118,6 @@ const bot = createBot({
 
 app.ws("/*", {
     idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason every 2 minutes
-    compression: uws.SHARED_COMPRESSOR,
     maxPayloadLength: 4096 * 4096,
 
     upgrade: (reply, req, context) => {
