@@ -64,13 +64,20 @@ const bot = createBot({
                 const sticker = message.stickerItems ? message.stickerItems[0] : null;
 
                 const user = await getUser(bot, message.authorId);
+                let avatar = getAvatar(user.username);
+                
+                try {
+                    avatar = await getAvatarUrl(bot, user);
+                } catch (err) {
+                    console.error(err);
+                };
 
                 app.publish(`rooms/${room}`, buildMessage({
                     author: user.username,
                     text: await parseGif(filterMessage(message.content)) + attachmentParser(message.attachments),
                     badge: config.MOD_IDS.includes(message.authorId) ? "<i class='fa-solid fa-shield'></i> Moderator" : "<i class='fa-brands fa-discord'></i> Discord User",
                     sticker: sticker ? getStickerUrl(sticker) : null,
-                    avatar: await getAvatarUrl(bot, user),
+                    avatar: avatar,
                     color: getColor(user.username)
                 }));
             };
