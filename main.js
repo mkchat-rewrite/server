@@ -10,6 +10,11 @@ import { parseMessage, parseQuery, filterName, checkName, filterMessage, buildMe
 import config from "./config.js";
 import { fileTypeFromBuffer } from "file-type";
 
+process.on("uncaughtException", (err) => {
+    console.error(err.stack);
+    console.log("logged error, no exit");
+});
+
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
 const app = uws.App();
 const supabase = createClient(config.DATABASE.URL, config.DATABASE.KEY);
