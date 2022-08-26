@@ -327,7 +327,8 @@ export async function isRemoteAddressAsnBan(addr) {
     const blacklist = [
         "AS396356", // maxihost/latitude.sh
         "AS63023", // globaltelehost
-        "AS9009" // m247
+        "AS9009", // m247
+        "AS25971" // milwaukee.k12.wi.us
     ];
 
     const { body } = await request(`http://ip-api.com/json/${addr}?fields=as`);
