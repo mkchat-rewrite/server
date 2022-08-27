@@ -7,6 +7,7 @@ export default Object.freeze({
     JOIN_WEBHOOK_URL: "https://discord.com/api/webhooks/991068364648628234/kSUVEGyGaRr8oytbbtEFJNAq8ISdaF-f8M_YKaqMvV32LZ-ivwGWv2ATobOBK0-3MrQO",
     ACTION_WEBHOOK_URL: "https://discord.com/api/webhooks/991068566021341185/Xv4alF0JL6vK8ayyU09LAZY8gi2gZjWI5JqXgcYi-ApCye7Yj7_4cQQKZvNJ0wLG13RO",
     MODERATION_PASSWORD: "wrinse4riboli<meatablesg{droidn)lopes",
+    GIPHY_KEY: "z2rkRbjQ3RY3kuYiJ8zrNeZT4jGbXZXW",
     ROOMS: {
         "991040161141895238": "main",
         "991040184638394418": "main2",
