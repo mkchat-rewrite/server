@@ -328,7 +328,8 @@ export async function isRemoteAddressAsnBan(addr) {
         "AS396356", // maxihost/latitude.sh
         "AS63023", // globaltelehost
         "AS9009", // m247
-        "AS25971" // milwaukee.k12.wi.us
+        "AS25971", // milwaukee.k12.wi.us
+        "AS21928" // t-mobile 💀
     ];
 
     const { body } = await request(`http://ip-api.com/json/${addr}?fields=as`);
