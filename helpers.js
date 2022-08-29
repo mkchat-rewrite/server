@@ -329,7 +329,7 @@ export async function isRemoteAddressAsnBan(addr) {
         "AS63023", // globaltelehost
         "AS9009", // m247
         "AS25971", // milwaukee.k12.wi.us
-        "AS21928" // t-mobile 💀
+        //"AS21928" // t-mobile 💀
     ];
 
     const { body } = await request(`http://ip-api.com/json/${addr}?fields=as`);
