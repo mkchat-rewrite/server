@@ -6,6 +6,8 @@ dotenv({ export: true });
 
 const users = new Map();
 
+console.log(Deno.env.toObject())
+
 function reqHandler(req: Request) {
     if (req.headers.get("upgrade") !== "websocket") return new Response(null, { status: 501 });
 
@@ -29,7 +31,7 @@ function reqHandler(req: Request) {
     return response;
 }
 
-serve(reqHandler, { port: Number(Deno.env.get("PORT")) });
+serve(reqHandler, { port: Number(Deno.env.get("PORT")), hostname: Deno.env.get("HOST") });
 
 function tryParseJson(str: string) {
     try {
