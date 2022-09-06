@@ -6,8 +6,6 @@ dotenv({ export: true });
 
 const users = new Map();
 
-console.log(Deno.env.toObject())
-
 function reqHandler(req: Request) {
     if (req.headers.get("upgrade") !== "websocket") return new Response(null, { status: 501 });
 
@@ -15,12 +13,44 @@ function reqHandler(req: Request) {
     const id = nanoid(16);
 
     ws.onopen = () => {
-        users.set(id, {});
-        console.log(id);
+        console.log(req.headers)
+
+        const addrs = req.headers.get("x-forwarded-for");
+        const ip = Array.isArray(addrs) ? addrs[0] : null;
+
+        // if (!ip) return ws.close(0, "Missing IP address");
+
+        users.set(id, { ip, ws });
     };
 
     ws.onmessage = (event: MessageEvent) => {
-        const { type=null, data=null } = tryParseJson(event.data);
+        const {
+            type = null,
+            data = null
+        } = tryParseJson(event.data);
+
+        switch(type) {
+            case "join": {
+                const {
+                    username = null,
+                    room = null
+                } = data;
+
+                if (!(username && room)) ws.close(0, "Invalid join data.");
+
+                users.set(id, { ...users.get(id), username, room, id });
+
+                console.log(users);
+
+                break;
+            }
+            case "message": {
+                const { text = null } = data;
+                console.log(text);
+                break;
+            }
+        }
+
         console.log(type, data);
     };
 
