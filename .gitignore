@@ -6,3 +6,6 @@ package-lock.json
 
 #vscode settings
 .vscode
+
+#secrets 🤫
+.env

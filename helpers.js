@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import Scraper from "lite-meta-scraper";
 import { request } from "undici";
-import { avatarURL } from "discordeno";
+import { getAvatarURL as avatarURL  } from "discordeno";
 import config from "./config.js";
 
 const badWords = /(((n|ɴ|[//])|(n|ɴ|[//])\s*)((i|ɪ|l|x|1|!|[*]|ee)|(i|ɪ|l|x|1|!|[*]|ee)\s*)((ɢ|g|b|q|6)|(ɢ|g|b|q|6)\s*){2}((e+r|e+\s*r)|a|ᴀ|@|3+r)|niga|ɴɪɢɢᴀ|discord.gg|teenxchat|rule34|pchat|r34|ziachat|\/nigg|n.i.g.g)/gi;

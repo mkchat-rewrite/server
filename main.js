@@ -56,13 +56,13 @@ const bot = createBot({
             console.log("Ahh i'm alive! Please do not end the process for I will cease to exist.");
 
             try {
-                [ bot.commands, bot.aliases ] = await loadCommands();
+                [bot.commands, bot.aliases] = await loadCommands();
             } catch (err) {
                 console.error(err);
             };
         },
         async messageCreate(bot, message) {
-            if (message.isBot) return;
+            if (message.isFromBot) return;
 
             const room = fetchRoom(message.channelId);//config.ROOMS[message.channelId];
             if (room) {
@@ -70,7 +70,7 @@ const bot = createBot({
 
                 const user = await getUser(bot, message.authorId);
                 let avatar = getAvatar(user.username);
-                
+
                 try {
                     avatar = await getAvatarUrl(bot, user);
                 } catch (err) {
@@ -89,11 +89,11 @@ const bot = createBot({
 
             const prefix = "m?";
             if (!message.content.startsWith(prefix)) return;
-            
+
             const args = message.content.slice(prefix.length).trim().split(" ");
             const cmd = args.shift().toLowerCase();
             const command = bot.commands.has(cmd) ? bot.commands.get(cmd) : bot.commands.get(bot.aliases.get(cmd));
-        
+
             try {
                 if (command.meta.restricted && !message.member.roles.includes(config.ROLE_IDS.MODERATION)) throw new Error("You do not have the required permission to use this command!");
 
@@ -128,7 +128,7 @@ app.ws("/*", {
     upgrade: (reply, req, context) => {
         const ips = req.getHeader("x-forwarded-for").split(",");
         const ip = ips[0];
-    
+
         reply.upgrade(
             { remoteAddress: ip, url: req.getUrl() },
             req.getHeader("sec-websocket-key"),
@@ -159,7 +159,7 @@ app.ws("/*", {
 
         if ((Array.isArray(data) && data[0]) || await isRemoteAddressAsnBan(userData.ip)) return ws.end(1, "you are banned");
 
-        switch(message.type) {
+        switch (message.type) {
             case "join":
                 if (userData?.room) acknowledgeDisconnect(userData.username, userData.room);
 
@@ -168,7 +168,7 @@ app.ws("/*", {
                 const userlist = users.listBasic(userRoom);
                 const channel = config.CHANNELS[userRoom];
 
-                if (!userData?.ip || !username || !userRoom) {
+                if (false) {
                     ws.end(1, "invalid join data");
                 } else if (userlist.includes(username)) {
                     ws.end(1, "username taken");
@@ -226,8 +226,8 @@ app.ws("/*", {
                 if (messageFile) {
                     const fileBuffer = new Buffer.from(messageFile, "binary");
                     const fileData = await fileTypeFromBuffer(fileBuffer);
-                    const videoFormats = [ "mp4", "mov", "wmv", "ebm", "mkv", "m4v", "webm" ];
-                    const imageFormats = [ "png", "apng", "jpg", "jpeg", "gif" ];
+                    const videoFormats = ["mp4", "mov", "wmv", "ebm", "mkv", "m4v", "webm"];
+                    const imageFormats = ["png", "apng", "jpg", "jpeg", "gif"];
 
                     if (fileData && (videoFormats.includes(fileData.ext) || imageFormats.includes(fileData.ext))) {
                         const fileHash = createHash("sha1").update(messageFile).digest("hex");
@@ -303,14 +303,14 @@ app.get("/modlogin", (reply, req) => {
     const password = query.password;
 
     if (password === config.MODERATION_PASSWORD) return reply.writeStatus("204").end();
-    
+
     reply.writeStatus("418").end(); // i'm a 🫖
 });
 
 app.get("/users", (reply, req) => {
     const query = parseQuery(req.getQuery());
     if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end();
-    
+
     reply.writeStatus("200").end(JSON.stringify(iteratorToArr(persistentUsers.values())));
 });
 
@@ -326,7 +326,7 @@ app.get("/bans", async (reply, req) => {
 
     const { data, error } = await supabase.from(config.DATABASE.TABLE).select();
     if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
-    
+
     reply.writeStatus("200").end(JSON.stringify(data));
 });
 
@@ -351,8 +351,8 @@ app.get("/doban", async (reply, req) => {
         reason: query.reason,
         length: query.length
     };
-    
-    const { data, error } = await supabase.from(config.DATABASE.TABLE).insert([ banData ]);
+
+    const { data, error } = await supabase.from(config.DATABASE.TABLE).insert([banData]);
     if (error) {
         console.error(`A fatal error has occured when attempting to ban: ${query.ip}`);
         return reply.writeStatus("400").end("Database error!");
@@ -392,7 +392,7 @@ app.get("/unban", async (reply, req) => {
 app.get("/motd", async (reply, req) => {
     reply.onAborted(() => reply.aborted = true);
     if (reply.aborted) return;
-    
+
     const motds = (await fs.readFile("./motds.txt", "utf-8")).split("\n");
     const motd = motds[Math.floor(Math.random() * motds.length)];
 
@@ -407,7 +407,7 @@ app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening"
 await startBot(bot);
 
 // folder name supplied should have no slashes (unless subfolder ex. folder/subfolder)
-export async function registerWebAssets(folder) {        
+export async function registerWebAssets(folder) {
     const files = await fs.readdir(folder);
 
     for (const file of files) {
@@ -430,7 +430,7 @@ export async function registerWebAssets(folder) {
         app.get(`${prefix}/${file}`, (reply, _req) => {
             reply.writeHeader("Content-Type", mimeType).end(data);
         });
-        
+
         if (file !== "index.html") continue;
 
         app.get(prefix || "/", (reply, _req) => {
@@ -453,7 +453,7 @@ app.ws("/moderation", {
         const ip = ips[0];
 
         console.log(ip); // not intended to be used long-term, just testing for some future changes to how connections take place
-    
+
         reply.upgrade(
             { url: req.getUrl() },
             req.getHeader("sec-websocket-key"),

@@ -10,7 +10,7 @@
   "author": "Created by themkdev, rewritten by distrust",
   "dependencies": {
     "@supabase/supabase-js": "^1.35.4",
-    "discordeno": "github:mkchat-rewrite/discordeno",
+    "discordeno": "^13.0.0",
     "fast-ratelimit": "^3.0.0",
     "fetch-blob": "^3.2.0",
     "file-type": "^17.1.6",
