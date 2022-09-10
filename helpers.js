@@ -289,7 +289,7 @@ export function parseGif(messageContent) {
             path: tenorGifUrl.replace("https://tenor.com", "")
         }).scrape((err, data) => {
             if (err || !data?.ogUrl) res(messageContent); // stupid but idc
-            res(messageContent.replace(tenorGifUrl, `<img src="${data.ogUrl}"  alt="tenor gif" class="attachment" />`));
+            res(messageContent.replace(tenorGifUrl, `<img src="${data?.ogUrl}"  alt="tenor gif" class="attachment" />`));
         });
     });
 };
