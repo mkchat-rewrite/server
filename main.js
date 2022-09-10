@@ -12,7 +12,11 @@ import { fileTypeFromBuffer } from "file-type";
 
 process.on("uncaughtException", (err) => {
     console.error(err.stack);
-    console.log("logged error, no exit");
+    console.log("uncaught error, no exit");
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.log("Unhandled Rejection at:", promise, "reason:", reason);
 });
 
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
