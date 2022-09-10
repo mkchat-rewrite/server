@@ -1,4 +1,5 @@
-await import("trace-unhandled/register");
+import * as traceUnhandled from "trace-unhandled";
+traceUnhandled.register();
 import fs from "fs/promises";
 import { createHash } from "crypto";
 import uws from "uWebSockets.js";
