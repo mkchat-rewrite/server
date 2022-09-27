@@ -1,26 +1,29 @@
 import { dotenv } from "./deps.ts";
-import { serve } from "https://deno.land/std@0.154.0/http/server.ts";
-import { nanoid } from "https://deno.land/x/nanoid@v3.0.0/mod.ts"
+import { serve } from "https://deno.land/std@0.157.0/http/server.ts";
+import { nanoid } from "https://deno.land/x/nanoid@v3.0.0/mod.ts";
 
 dotenv({ export: true });
 
 const users = new Map();
+const messages = new Map(); // store message history in memory for now, later use redis/deta for perm storage
 
 function reqHandler(req: Request) {
-    if (req.headers.get("upgrade") !== "websocket") return new Response(null, { status: 501 });
+    if (req.headers.get("upgrade") !== "websocket") return new Response("Upgrade Required", { status: 426 });
+    // remove above line when http endpoints are introduced
 
     const { socket: ws, response } = Deno.upgradeWebSocket(req);
     const id = nanoid(16);
 
     ws.onopen = () => {
-        console.log(req.headers)
+        console.log(req.headers);
 
         const addrs = req.headers.get("x-forwarded-for");
-        const ip = Array.isArray(addrs) ? addrs[0] : null;
+        const ipAddr = Array.isArray(addrs) ? addrs[0] : null;
+        const userAgent = req.headers.get("user-agent");
 
-        // if (!ip) return ws.close(0, "Missing IP address");
+        if (!(ipAddrr && userAgent)) return ws.close(1007, "Invalid headers.");
 
-        users.set(id, { ip, ws });
+        users.set(id, { ipAddr, userAgent, ws });
     };
 
     ws.onmessage = (event: MessageEvent) => {
@@ -36,7 +39,7 @@ function reqHandler(req: Request) {
                     room = null
                 } = data;
 
-                if (!(username && room)) ws.close(0, "Invalid join data.");
+                if (!(username && room)) return ws.close(1007, "Received invalid data.");
 
                 users.set(id, { ...users.get(id), username, room, id });
 
@@ -70,3 +73,5 @@ function tryParseJson(str: string) {
         return {};
     }
 }
+
+// spec for close events: https://github.com/Luka967/websocket-close-codes
