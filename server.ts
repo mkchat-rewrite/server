@@ -1,10 +1,21 @@
+// todo: implement pub/sub
+
 import { dotenv } from "./deps.ts";
-import { serve } from "https://deno.land/std@0.157.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.154.0/http/server.ts";
 import { nanoid } from "https://deno.land/x/nanoid@v3.0.0/mod.ts";
 
 dotenv({ export: true });
 
-const users = new Map();
+interface User {
+    ws?: WebSocket,
+    username?: string,
+    room?: string,
+    id?: string,
+    ipAddr?: string,
+    userAgent?: string
+};
+
+const users = new Map<string, User>();
 const messages = new Map(); // store message history in memory for now, later use redis/deta for perm storage
 
 function reqHandler(req: Request) {
@@ -17,11 +28,11 @@ function reqHandler(req: Request) {
     ws.onopen = () => {
         console.log(req.headers);
 
-        const addrs = req.headers.get("x-forwarded-for");
+        const addrs = req.headers.get("x-forwarded-for")?.split(",");
         const ipAddr = Array.isArray(addrs) ? addrs[0] : null;
         const userAgent = req.headers.get("user-agent");
 
-        if (!(ipAddrr && userAgent)) return ws.close(1007, "Invalid headers.");
+        if (!(ipAddr && userAgent)) return ws.close(1007, "Invalid headers.");
 
         users.set(id, { ipAddr, userAgent, ws });
     };
@@ -39,7 +50,7 @@ function reqHandler(req: Request) {
                     room = null
                 } = data;
 
-                if (!(username && room)) return ws.close(1007, "Received invalid data.");
+                if (!(username && room)) ws.close(1007, "Received invalid data.");
 
                 users.set(id, { ...users.get(id), username, room, id });
 
@@ -52,6 +63,11 @@ function reqHandler(req: Request) {
                 console.log(text);
                 break;
             }
+            case "broadcast": {
+                for (const user of users.values()) {
+                    user?.ws?.send(data);
+                };
+            } // test broadcasting data to all clients
         }
 
         console.log(type, data);
