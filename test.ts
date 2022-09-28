@@ -1,11 +1,20 @@
 import { serve } from "https://deno.land/std@0.157.0/http/server.ts";
-import { createRouter } from "./http/index.ts";
+import { createRouter, register } from "./http/index.ts";
 import { createSocketHandler, broadcast, publish, subscribe, unsubscribe, Connection } from "./websocket/index.ts";
 import { httpRequestHandler } from "./methods/httpRequestHandler.ts";
 import { tryParseJson } from "./methods/tryParseJson.ts";
 
 const router = createRouter({
 
+});
+
+register({
+    router,
+    method: "get",
+    route: "/",
+    handler: (req: Request) => {
+
+    }
 });
 
 const wss = createSocketHandler({
