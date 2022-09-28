@@ -1,6 +1,4 @@
-// todo: implement pub/sub
-
-import { dotenv } from "./deps.ts";
+import { config as dotenv } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
 import { serve } from "https://deno.land/std@0.157.0/http/server.ts";
 import { nanoid } from "https://deno.land/x/nanoid@v3.0.0/mod.ts";
 

@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.157.0/http/server.ts";
-import { createSocketHandler, broadcast, handleSocket, publish, subscribe, Connection } from "./index.ts";
+import { createSocketHandler, broadcast, publish, subscribe, unsubscribe, Connection } from "./websocket/index.ts";
+import { httpRequestHandler } from "./methods/httpRequestHandler.ts";
+import { tryParseJson } from "./methods/tryParseJson.ts";
 
 const wss = createSocketHandler({
     uniqueIdLength: 16,
@@ -35,22 +37,4 @@ const wss = createSocketHandler({
     }
 });
 
-function requestHandler(req: Request) {
-    if (req.headers.get("upgrade") !== "websocket") return new Response("Upgrade Required", { status: 426 });
-
-    const { socket, response } = Deno.upgradeWebSocket(req);
-
-    handleSocket(wss, socket);
-
-    return response;
-}
-
-serve(requestHandler, { port: 3000 });
-
-function tryParseJson(str: string) {
-    try {
-        return JSON.parse(str);
-    } catch {
-        return {};
-    }
-}
+serve((req: Request) => httpRequestHandler(wss, req), { port: 3000 });

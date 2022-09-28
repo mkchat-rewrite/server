@@ -1,5 +1,3 @@
-// TODO: move the handleSocket method to it's own file and export it instead of returning from main method
-
 import { nanoid } from "https://deno.land/x/nanoid@v3.0.0/mod.ts";
 
 export interface HandlerOptions {
@@ -41,3 +39,4 @@ export { broadcast } from "./methods/broadcast.ts";
 export { handleSocket } from "./methods/handleSocket.ts";
 export { publish } from "./methods/publish.ts";
 export { subscribe } from "./methods/subscribe.ts";
+export { unsubscribe } from "./methods/unsubscribe.ts";
