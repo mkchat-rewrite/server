@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.157.0/http/server.ts";
-import { createSocketHandler, broadcast, subscribe, publish, Connection } from "./index.ts";
+import { createSocketHandler, broadcast, handleSocket, publish, subscribe, Connection } from "./index.ts";
 
 const wss = createSocketHandler({
     uniqueIdLength: 16,
@@ -40,7 +40,7 @@ function requestHandler(req: Request) {
 
     const { socket, response } = Deno.upgradeWebSocket(req);
 
-    wss.handleSocket(socket);
+    handleSocket(wss, socket);
 
     return response;
 }

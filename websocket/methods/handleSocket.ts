@@ -1,5 +1,18 @@
-// TODO: move this method here from websocket\index.ts
+import { SocketHandler } from "../index.ts";
 
-export function handleSocket() {
+export function handleSocket({ connections, eventHandlers, uniqueIdLength }: SocketHandler, socket: WebSocket) {
+    const id = nanoid(uniqueIdLength);
+    const connection = { id, socket };
 
+    socket.onopen = async () => {
+        connections.set(id, connection);
+        return await eventHandlers?.open?.(connection);
+    };
+
+    socket.onmessage = async (event: MessageEvent) => await eventHandlers?.message?.(connections.get(id) as Connection, event);
+
+    socket.onclose = async (event: CloseEvent) => {
+        connections.delete(id);
+        return await eventHandlers?.close?.(connection, event);
+    };
 };
