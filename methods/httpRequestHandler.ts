@@ -7,7 +7,7 @@ export function httpRequestHandler(req: Request, router: HttpRouter, wss: Socket
         handleSocket(req, wss, socket);
         return response;
     } else {
-        return handleRoutes(router, req);
+        return handleRoutes(req, router);
     };
 
     // return new Response("Upgrade Required", { status: 426 })

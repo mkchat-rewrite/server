@@ -1,3 +1,5 @@
+// TODO: use a Set instead of an array to store registered routes
+
 type HttpMethod = "get" | "head" | "post" | "put" | "delete" | "options" | "patch";
 type RequestHandler = (req: Request) => unknown;
 

@@ -13,7 +13,7 @@ register({
     method: "get",
     route: "/",
     handler: (req: Request) => {
-
+        return new Response("test");
     }
 });
 

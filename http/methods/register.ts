@@ -1,12 +1,9 @@
-import { Route } from "../index.ts";
+import { Route, HttpRouter } from "../index.ts";
 
 interface RouteOptions extends Route {
-    router: HttpRouter,
-    method: HttpMethod,
-    route: string,
-    handler: RequestHandler
+    router: HttpRouter
 };
 
-export function register(opts: RouteOptions) {
-
+export function register({ router, method, route, handler }: RouteOptions) {
+    router.routes.push({ method, route, handler });
 };
