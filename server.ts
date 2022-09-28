@@ -32,7 +32,7 @@ function reqHandler(req: Request) {
         const ipAddr = Array.isArray(addrs) ? addrs[0] : null;
         const userAgent = req.headers.get("user-agent");
 
-        if (!(ipAddr && userAgent)) return ws.close(1007, "Invalid headers.");
+        if (!(ipAddr && userAgent)) return ws.close(1007, "Received invalid headers.");
 
         users.set(id, { ipAddr, userAgent, ws });
     };
