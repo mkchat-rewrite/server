@@ -1,5 +1,3 @@
-import { nanoid } from "https://deno.land/x/nanoid@v3.0.0/mod.ts";
-
 export interface HandlerOptions {
     uniqueIdLength?: number,
     events: Partial<SocketEvents>

@@ -1,5 +1,9 @@
 // TODO: use a Set instead of an array to store registered routes
 
+export interface RouterOptions {
+
+};
+
 type HttpMethod = "get" | "head" | "post" | "put" | "delete" | "options" | "patch";
 type RequestHandler = (req: Request) => unknown;
 
@@ -13,7 +17,7 @@ export interface HttpRouter {
     routes: Route[]
 };
 
-export function createRouter(): HttpRouter {
+export function createRouter(opts: RouterOptions): HttpRouter {
     return { routes: [ {} as Route ] } as HttpRouter;
 };
 

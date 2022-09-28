@@ -1,4 +1,5 @@
-import { SocketHandler } from "../index.ts";
+import { nanoid } from "https://deno.land/x/nanoid@v3.0.0/mod.ts";
+import { SocketHandler, Connection } from "../index.ts";
 
 export function handleSocket(req: Request, { connections, eventHandlers, uniqueIdLength }: SocketHandler, socket: WebSocket) {
     const id = nanoid(uniqueIdLength);

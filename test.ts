@@ -52,4 +52,7 @@ const wss = createSocketHandler({
     }
 });
 
-serve((req: Request) => httpRequestHandler(req, router, wss), { port: 3000 });
+serve((req: Request) => {
+    console.log(req.url.split("/"));
+    return httpRequestHandler(req, router, wss);
+}, { port: 3000 });
