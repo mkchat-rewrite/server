@@ -1,11 +1,14 @@
-import { handleSocket } from "../websocket/methods/handleSocket.ts";
+import { handleRoutes, HttpRouter } from "../http/index.ts";
+import { handleSocket, SocketHandler } from "../websocket/index.ts";
 
-export function httpRequestHandler(req: Request, wss) {
-    if (req.headers.get("upgrade") !== "websocket") return new Response("Upgrade Required", { status: 426 });
+export function httpRequestHandler(req: Request, router: HttpRouter, wss: SocketHandler) {
+    if (req.headers.get("upgrade") === "websocket") {
+        const { socket, response } = Deno.upgradeWebSocket(req);
+        handleSocket(req, wss, socket);
+        return response;
+    } else {
+        return handleRoutes(router, req);
+    };
 
-    const { socket, response } = Deno.upgradeWebSocket(req);
-
-    handleSocket(wss, socket);
-
-    return response;
+    // return new Response("Upgrade Required", { status: 426 })
 };

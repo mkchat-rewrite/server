@@ -1,8 +1,8 @@
 import { SocketHandler } from "../index.ts";
 
-export function handleSocket({ connections, eventHandlers, uniqueIdLength }: SocketHandler, socket: WebSocket) {
+export function handleSocket(req: Request, { connections, eventHandlers, uniqueIdLength }: SocketHandler, socket: WebSocket) {
     const id = nanoid(uniqueIdLength);
-    const connection = { id, socket };
+    const connection = { id, socket, originRequest: req };
 
     socket.onopen = async () => {
         connections.set(id, connection);

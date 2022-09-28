@@ -20,7 +20,8 @@ export interface SocketEvents {
 export interface Connection {
     id: string,
     channel?: string | null,
-    socket: WebSocket
+    socket: WebSocket,
+    originRequest: Request
 };
 
 export function createSocketHandler(opts: HandlerOptions): SocketHandler {

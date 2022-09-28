@@ -1,13 +1,19 @@
 import { serve } from "https://deno.land/std@0.157.0/http/server.ts";
+import { createRouter } from "./http/index.ts";
 import { createSocketHandler, broadcast, publish, subscribe, unsubscribe, Connection } from "./websocket/index.ts";
 import { httpRequestHandler } from "./methods/httpRequestHandler.ts";
 import { tryParseJson } from "./methods/tryParseJson.ts";
+
+const router = createRouter({
+
+});
 
 const wss = createSocketHandler({
     uniqueIdLength: 16,
     events: {
         open: (conn: Connection) => {
             console.log("open", conn);
+            console.log("originating request:", conn.originRequest);
         },
         message: (conn: Connection, event: MessageEvent) => {
             const {
@@ -37,4 +43,4 @@ const wss = createSocketHandler({
     }
 });
 
-serve((req: Request) => httpRequestHandler(wss, req), { port: 3000 });
+serve((req: Request) => httpRequestHandler(req, router, wss), { port: 3000 });
