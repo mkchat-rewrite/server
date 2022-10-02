@@ -5,7 +5,7 @@ export interface RouterOptions {
 };
 
 type HttpMethod = "get" | "head" | "post" | "put" | "delete" | "options" | "patch";
-type RequestHandler = (req: Request) => unknown;
+type RequestHandler = (req: Request) => Response;
 
 export interface Route {
     method: HttpMethod,
@@ -14,11 +14,12 @@ export interface Route {
 };
 
 export interface HttpRouter {
-    routes: Route[]
+    routes: Set<Route>
 };
 
 export function createRouter(opts: RouterOptions): HttpRouter {
-    return { routes: [ {} as Route ] } as HttpRouter;
+    const routes = new Set<Route>();
+    return { routes } as HttpRouter;
 };
 
 export { handleRoutes } from "./methods/handleRoutes.ts";

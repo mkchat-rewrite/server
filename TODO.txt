@@ -1,0 +1,10 @@
+done:
+    websocket event/message handling with pub/sub and global braodcasting
+    basic http routing
+
+todo:
+    more sophisticated http router
+    begin implementing actual mkchat functionality
+    login/accoutn system
+    giphy integration
+    discord mirror (run in seperate process)

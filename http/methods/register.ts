@@ -5,5 +5,5 @@ interface RouteOptions extends Route {
 };
 
 export function register({ router, method, route, handler }: RouteOptions) {
-    router.routes.push({ method, route, handler });
+    router.routes.add({ method, route, handler });
 };
