@@ -5,6 +5,7 @@ done:
 todo:
     more sophisticated http router
     begin implementing actual mkchat functionality
-    login/accoutn system
+    login/accoutn system (maybe, i still dont know if it makes sense to have this)
     giphy integration
     discord mirror (run in seperate process)
+    store room messages so on connect users see previous messages
