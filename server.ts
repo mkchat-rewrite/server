@@ -1,7 +1,7 @@
 import { config as dotenv } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
 import { serve } from "https://deno.land/std@0.157.0/http/server.ts";
-import { createRouter, register } from "./http/index.ts";
-import { createSocketHandler, broadcast, publish, subscribe, unsubscribe, Connection } from "./websocket/index.ts";
+import { createRouter, register } from "./modules/http/index.ts";
+import { createSocketHandler, broadcast, publish, subscribe, unsubscribe, Connection } from "./modules/websocket/index.ts";
 import { httpRequestHandler } from "./methods/httpRequestHandler.ts";
 import { tryParseJson } from "./methods/tryParseJson.ts";
 
@@ -20,14 +20,35 @@ const users = new Map<string, User>();
 
 const router = createRouter({});
 
+// upload attachments
+register({
+    router,
+    method: "post",
+    route: "/rooms/:room/attachments",
+    handler: async (req: Request) => {
+        console.log(await req.blob());
+        return new Response("test");
+    }
+});
+
 // send message to room users
 register({
     router,
     method: "post",
     route: "/rooms/:room/messages",
-    handler: (req: Request) => {
-        console.log(req);
-        return new Response("test");
+    handler: async (req: Request) => {
+        const body = tryParseJson(await req.text());
+        if (!Object.entries(body).length) return new Response("Malformed JSON body.", { status: 400 });
+
+        const {
+            userId = null,
+            content = null
+        } = body;
+
+        if (!(userId && content)) return new Response("Missing required fields.", { status: 400 });
+
+        console.log(userId, content);
+        return new Response(null, { status: 204 });
     }
 });
 
@@ -86,10 +107,6 @@ const wss = createSocketHandler({
 
                     break;
                 }
-                case "message": {
-                    const { text = null } = data;
-                    console.log(text);
-                }
                 default:
                     break;
             }
@@ -100,6 +117,6 @@ const wss = createSocketHandler({
     }
 });
 
-serve((req: Request) => {
-    return httpRequestHandler(req, router, wss);
+serve(async (req: Request) => {
+    return await httpRequestHandler(req, router, wss);
 }, { port: 3000 });

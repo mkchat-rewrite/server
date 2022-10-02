@@ -4,8 +4,8 @@ export interface RouterOptions {
 
 };
 
-type HttpMethod = "get" | "head" | "post" | "put" | "delete" | "options" | "patch";
-type RequestHandler = (req: Request) => Response;
+export type HttpMethod = "get" | "head" | "post" | "put" | "delete" | "options" | "patch";
+export type RequestHandler = (req: Request) => Response | Promise<Response>;
 
 export interface Route {
     method: HttpMethod,
