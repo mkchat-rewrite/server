@@ -8,7 +8,7 @@ export async function handleRoutes(req: Request, router: HttpRouter): Promise<Re
         const pattern = pathToRegexp(route.route);
         const match = pattern.exec(path);
 
-        if (match) {
+        if (match && req.method === route.method) {
             return await route.handler(req);
         };
     };

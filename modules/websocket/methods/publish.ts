@@ -5,7 +5,7 @@ export function publish({ connections }: SocketHandler, { channel = null }: Conn
         throw new Error("Cannot publish because the connection is not subscribed to a channel.");
     } else {
         for (const conn of connections.values()) {
-            if (conn.channel === channel) conn.socket.send(data);
+            if (conn?.channel === channel) conn.socket.send(data);
         }
     };
 };

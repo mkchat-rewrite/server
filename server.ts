@@ -4,64 +4,13 @@ import { createRouter, register } from "./modules/http/index.ts";
 import { createSocketHandler, broadcast, publish, subscribe, unsubscribe, Connection } from "./modules/websocket/index.ts";
 import { httpRequestHandler } from "./methods/httpRequestHandler.ts";
 import { tryParseJson } from "./methods/tryParseJson.ts";
+import { User, IncomingMessageBody } from "./types.ts";
 
 dotenv({ export: true });
-
-interface User {
-    id: string,
-    socket: WebSocket,
-    ipAddr: string,
-    userAgent: string,
-    username?: string,
-    room?: string
-};
 
 const users = new Map<string, User>();
 
 const router = createRouter({});
-
-// upload attachments
-register({
-    router,
-    method: "post",
-    route: "/rooms/:room/attachments",
-    handler: async (req: Request) => {
-        console.log(await req.blob());
-        return new Response("test");
-    }
-});
-
-// send message to room users
-register({
-    router,
-    method: "post",
-    route: "/rooms/:room/messages",
-    handler: async (req: Request) => {
-        const body = tryParseJson(await req.text());
-        if (!Object.entries(body).length) return new Response("Malformed JSON body.", { status: 400 });
-
-        const {
-            userId = null,
-            content = null
-        } = body;
-
-        if (!(userId && content)) return new Response("Missing required fields.", { status: 400 });
-
-        console.log(userId, content);
-        return new Response(null, { status: 204 });
-    }
-});
-
-// respond with messages from room, preferrably have a "limit" param to specfy how many messages to return
-register({
-    router,
-    method: "get",
-    route: "/rooms/:room/messages",
-    handler: (req: Request) => {
-        console.log(req);
-        return new Response("test");
-    }
-});
 
 const wss = createSocketHandler({
     uniqueIdLength: 16,
@@ -92,7 +41,7 @@ const wss = createSocketHandler({
             if (!user) return socket.close(1008, "Client connection is invalid.");
 
             switch(type) {
-                case "join": {
+                case "JOIN": {
                     const {
                         username = null,
                         room = null
@@ -114,6 +63,80 @@ const wss = createSocketHandler({
         close: (conn: Connection, event: CloseEvent) => {
             // console.log("close", conn, event);
         }
+    }
+});
+
+// upload attachments
+register({
+    router,
+    method: "POST",
+    route: "/rooms/:room/attachments",
+    handler: async (req: Request) => {
+        console.log(await req.blob());
+        return new Response("test");
+    }
+});
+
+// request attachment
+register({
+    router,
+    method: "GET",
+    route: "/rooms/:room/attachments/:attachment",
+    handler: async (req: Request) => {
+        console.log(await req.blob());
+        return new Response("test");
+    }
+});
+
+// send message to room users
+register({
+    router,
+    method: "POST",
+    route: "/rooms/:room/messages",
+    handler: async (req: Request) => {
+        const body = tryParseJson(await req.text());
+        if (!Object.entries(body).length) return new Response("Malformed JSON body.", { status: 400 });
+
+        const {
+            userId = null,
+            content = null,
+            attachments = []
+        } = body;
+        if (!(userId && content)) return new Response("Missing required fields.", { status: 400 });
+
+        const {
+            id,
+            username = null,
+            room = null
+        } = users.get(userId);
+        if (!(username && room)) return new Response("Client connection is invalid.", { status: 400 });
+
+        broadcast(wss, {
+            type: "MESSAGE",
+            data: {
+                author: {
+                    username,
+                    id
+                },
+                content,
+                attachments,
+                timestamp: Date.now() 
+            }
+        }, room);
+
+        console.log(userId, content);
+        return new Response(null, { status: 204 });
+    }
+});
+
+// respond with messages from room, preferrably have a "limit" param to specfy how many messages to return
+register({
+    router,
+    method: "GET",
+    route: "/rooms/:room/messages",
+    handler: (req: Request) => {
+        console.log(req);
+        return new Response("test");
     }
 });
 
