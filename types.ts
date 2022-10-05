@@ -6,3 +6,12 @@ export interface User {
     username?: string,
     room?: string
 };
+
+export interface ChatMessage {
+    author: {
+        id: string,
+        username: string
+    },
+    content: string,
+    attachments: string[]
+};

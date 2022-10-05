@@ -1,10 +1,10 @@
 import { config as dotenv } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
 import { serve } from "https://deno.land/std@0.157.0/http/server.ts";
 import { createRouter, register } from "./modules/http/index.ts";
-import { createSocketHandler, broadcast, publish, subscribe, unsubscribe, Connection } from "./modules/websocket/index.ts";
+import { createSocketHandler, broadcast, publish, subscribe, unsubscribe, Connection, SocketHandler } from "./modules/websocket/index.ts";
 import { httpRequestHandler } from "./methods/httpRequestHandler.ts";
 import { tryParseJson } from "./methods/tryParseJson.ts";
-import { User, IncomingMessageBody } from "./types.ts";
+import { User, ChatMessage } from "./types.ts";
 
 dotenv({ export: true });
 
@@ -104,25 +104,25 @@ register({
         } = body;
         if (!(userId && content)) return new Response("Missing required fields.", { status: 400 });
 
+        const user = users.get(userId);
+        if (!(user)) return new Response("Client connection is invalid.", { status: 400 });
+
         const {
             id,
             username = null,
             room = null
-        } = users.get(userId);
-        if (!(username && room)) return new Response("Client connection is invalid.", { status: 400 });
+        } = user;
 
-        broadcast(wss, {
-            type: "MESSAGE",
-            data: {
-                author: {
-                    username,
-                    id
-                },
-                content,
-                attachments,
-                timestamp: Date.now() 
-            }
-        }, room);
+        if (!(username && room)) return new Response("Client has not joined a room.", { status: 400 });
+
+        sendChatMessage(wss, room, {
+            author: {
+                id,
+                username
+            },
+            content,
+            attachments
+        });
 
         console.log(userId, content);
         return new Response(null, { status: 204 });
@@ -143,3 +143,13 @@ register({
 serve(async (req: Request) => {
     return await httpRequestHandler(req, router, wss);
 }, { port: 3000 });
+
+function sendChatMessage(wss: SocketHandler, room: string, message: ChatMessage) {
+    publish(wss, room, JSON.stringify({
+        type: "MESSAGE",
+        data: {
+            ...message,
+            timestamp: Date.now()
+        }
+    }));
+};
