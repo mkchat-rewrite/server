@@ -13,6 +13,8 @@ import { executeWebhook, parseMessage, parseQuery, filterName, checkName, filter
 import config from "./config.js";
 import { fileTypeFromBuffer } from "file-type";
 
+let lastWebhookMessageUsername = "";
+
 async function updateWebhookNameAndAvatar(webhookUrl, username, avatarData) {
     await request(webhookUrl, {
         method: "PATCH",
@@ -36,10 +38,13 @@ async function encodeUserAvatar(avatarUrl) {
 async function sendTestWebhookChatMessage(username, avatarData, message) {
     const webhookUrl = "https://discord.com/api/webhooks/1030821578390380654/symSSgNAhrBFhFBFHEa-mPpSjyeHmvvkBVZwraIMQATlY1KCUD30Ey15aOLaIafUZXXP";
 
-    await updateWebhookNameAndAvatar(webhookUrl, username, avatarData);
+    if (lastWebhookMessageUsername !== username) await updateWebhookNameAndAvatar(webhookUrl, username, avatarData);
+
     await executeWebhook(webhookUrl, {
         content: message
     });
+
+    lastWebhookMessageUsername = username;
 };
 
 process.on("uncaughtException", (err) => {
