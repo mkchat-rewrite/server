@@ -12,133 +12,167 @@ const users = new Map<string, User>();
 
 const router = createRouter({});
 
+register({
+    router,
+    method: "POST",
+    route: "/oauth/account/register",
+    handler: async (req: Request) => {
+        const data = await req.formData();
+        const {
+            email,
+            username,
+            password
+        } = Object.fromEntries(data.entries());
+
+        if (!(email && username && password)) return new Response("Missing Field(s)", { status: 400 });
+
+        console.log(email, username, password);
+
+        return new Response("test");
+    }
+});
+
+register({
+    router,
+    method: "POST",
+    route: "/oauth/account/login",
+    handler: async (req: Request) => {
+        console.log(await req.blob());
+        return new Response("test");
+    }
+});
+
 const wss = createSocketHandler({
-    uniqueIdLength: 16,
-    events: {
-        open: ({ id, socket, originRequest: req }: Connection) => {
-            const addrs = req.headers.get("x-forwarded-for")?.split(",");
-            const ipAddr = Array.isArray(addrs) ? addrs[0] : "local"; // change "local" to null in prod
-            const userAgent = req.headers.get("user-agent");
+    events: {}
+});
 
-            if (!(ipAddr && userAgent)) return socket.close(1007, "Received invalid headers.");
+// const wss = createSocketHandler({
+//     uniqueIdLength: 16,
+//     events: {
+//         open: ({ id, socket, originRequest: req }: Connection) => {
+//             const addrs = req.headers.get("x-forwarded-for")?.split(",");
+//             const ipAddr = Array.isArray(addrs) ? addrs[0] : "local"; // change "local" to null in prod
+//             const userAgent = req.headers.get("user-agent");
 
-            users.set(id, {
-                id,
-                socket,
-                ipAddr,
-                userAgent
-            });
-        },
-        message: (conn: Connection, event: MessageEvent) => {
-            const {
-                type = null,
-                data = null
-            } = tryParseJson(event.data);
+//             if (!(ipAddr && userAgent)) return socket.close(1007, "Received invalid headers.");
 
-            const { id, socket } = conn;
+//             users.set(id, {
+//                 id,
+//                 socket,
+//                 ipAddr,
+//                 userAgent
+//             });
+//         },
+//         message: (conn: Connection, event: MessageEvent) => {
+//             const {
+//                 type = null,
+//                 data = null
+//             } = tryParseJson(event.data);
 
-            const user = users.get(id);
-            if (!user) return socket.close(1008, "Client connection is invalid.");
+//             const { id, socket } = conn;
 
-            switch(type) {
-                case "JOIN": {
-                    const {
-                        username = null,
-                        room = null
-                    } = data;
+//             const user = users.get(id);
+//             if (!user) return socket.close(1008, "Client connection is invalid.");
+
+//             switch(type) {
+//                 case "JOIN": {
+//                     const {
+//                         username = null,
+//                         room = null
+//                     } = data;
     
-                    if (!(username && room)) return socket.close(1007, "Received invalid data.");
+//                     if (!(username && room)) return socket.close(1007, "Received invalid data.");
 
-                    if (user?.room) unsubscribe(wss, conn);
+//                     if (user?.room) unsubscribe(wss, conn);
 
-                    subscribe(wss, conn, room);
-                    users.set(id, { ...user, username, room });
+//                     subscribe(wss, conn, room);
+//                     users.set(id, { ...user, username, room });
 
-                    break;
-                }
-                default:
-                    break;
-            }
-        },
-        close: (conn: Connection, event: CloseEvent) => {
-            // console.log("close", conn, event);
-        }
-    }
-});
+//                     break;
+//                 }
+//                 default:
+//                     break;
+//             }
+//         },
+//         close: (conn: Connection, event: CloseEvent) => {
+//             // console.log("close", conn, event);
+//         }
+//     }
+// });
 
-// upload attachments
-register({
-    router,
-    method: "POST",
-    route: "/rooms/:room/attachments",
-    handler: async (req: Request) => {
-        console.log(await req.blob());
-        return new Response("test");
-    }
-});
+// // upload attachments
+// register({
+//     router,
+//     method: "POST",
+//     route: "/rooms/:room/attachments",
+//     handler: async (req: Request) => {
+//         console.log(await req.blob());
+//         return new Response("test");
+//     }
+// });
 
-// request attachment
-register({
-    router,
-    method: "GET",
-    route: "/rooms/:room/attachments/:attachment",
-    handler: async (req: Request) => {
-        console.log(await req.blob());
-        return new Response("test");
-    }
-});
+// // request attachment
+// register({
+//     router,
+//     method: "GET",
+//     route: "/rooms/:room/attachments/:attachment",
+//     handler: async (req: Request) => {
+//         console.log(await req.blob());
+//         return new Response("test");
+//     }
+// });
 
-// send message to room users
-register({
-    router,
-    method: "POST",
-    route: "/rooms/:room/messages",
-    handler: async (req: Request) => {
-        const body = tryParseJson(await req.text());
-        if (!Object.entries(body).length) return new Response("Malformed JSON body.", { status: 400 });
+// // send message to room users
+// register({
+//     router,
+//     method: "POST",
+//     route: "/rooms/:room/messages",
+//     handler: async (req: Request) => {
+//         const body = tryParseJson(await req.text());
+//         if (!Object.entries(body).length) return new Response("Malformed JSON body.", { status: 400 });
 
-        const {
-            userId = null,
-            content = null,
-            attachments = []
-        } = body;
-        if (!(userId && content)) return new Response("Missing required fields.", { status: 400 });
+//         const {
+//             userId = null,
+//             content = null,
+//             attachments = []
+//         } = body;
+//         if (!(userId && content)) return new Response("Missing required fields.", { status: 400 });
 
-        const user = users.get(userId);
-        if (!(user)) return new Response("Client connection is invalid.", { status: 400 });
+//         const user = users.get(userId);
+//         if (!(user)) return new Response("Client connection is invalid.", { status: 400 });
 
-        const {
-            id,
-            username = null,
-            room = null
-        } = user;
+//         const {
+//             id,
+//             username = null,
+//             room = null
+//         } = user;
 
-        if (!(username && room)) return new Response("Client has not joined a room.", { status: 400 });
+//         if (!(username && room)) return new Response("Client has not joined a room.", { status: 400 });
 
-        sendChatMessage(wss, room, {
-            author: {
-                id,
-                username
-            },
-            content,
-            attachments
-        });
+//         sendChatMessage(wss, room, {
+//             author: {
+//                 id,
+//                 username
+//             },
+//             content,
+//             attachments
+//         });
 
-        console.log(userId, content);
-        return new Response(null, { status: 204 });
-    }
-});
+//         console.log(userId, content);
+//         return new Response(null, { status: 204 });
+//     }
+// });
 
-// respond with messages from room, preferrably have a "limit" param to specfy how many messages to return
-register({
-    router,
-    method: "GET",
-    route: "/rooms/:room/messages",
-    handler: (req: Request) => {
-        console.log(req);
-        return new Response("test");
-    }
-});
+// // respond with messages from room, preferrably have a "limit" param to specfy how many messages to return
+// register({
+//     router,
+//     method: "GET",
+//     route: "/rooms/:room/messages",
+//     handler: (req: Request) => {
+//         console.log(req);
+//         return new Response("test");
+//     }
+// });
 
 serve(async (req: Request) => {
     return await httpRequestHandler(req, router, wss);

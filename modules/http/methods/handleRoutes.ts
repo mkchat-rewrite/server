@@ -9,7 +9,10 @@ export async function handleRoutes(req: Request, router: HttpRouter): Promise<Re
         const match = pattern.exec(path);
 
         if (match && req.method === route.method) {
-            return await route.handler(req);
+            const res = await route.handler(req);
+            res.headers.set("Access-Control-Allow-Origin", "*");
+            res.headers.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            return res;
         };
     };
 
