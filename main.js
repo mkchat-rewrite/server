@@ -3,14 +3,44 @@ traceUnhandled.register();
 import fs from "fs/promises";
 import { createHash } from "crypto";
 import uws from "uWebSockets.js";
+import { request } from "undici";
 import mime from "mime-types";
 import { startBot, createBot, sendMessage, addRole, removeRole, getUser, Intents } from "discordeno";
 import { nanoid } from "nanoid";
 import { FastRateLimit } from "fast-ratelimit";
 import { createClient } from "@supabase/supabase-js";
-import { parseMessage, parseQuery, filterName, checkName, filterMessage, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom, isRemoteAddressAsnBan } from "./helpers.js";
+import { executeWebhook, parseMessage, parseQuery, filterName, checkName, filterMessage, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom, isRemoteAddressAsnBan, abToStr } from "./helpers.js";
 import config from "./config.js";
 import { fileTypeFromBuffer } from "file-type";
+
+async function updateWebhookNameAndAvatar(webhookUrl, username, avatarData) {
+    await request(webhookUrl, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            name: username,
+            avatar: avatarData
+        })
+    });
+};
+
+async function encodeUserAvatar(avatarUrl) {
+    const { body } = await request(avatarUrl);
+    const data = await body.arrayBuffer();
+    const baseStr = Buffer.from(data).toString("base64");
+    return `data:image/png;base64,${baseStr}`;
+};
+
+async function sendTestWebhookChatMessage(username, avatarData, message) {
+    const webhookUrl = "https://discord.com/api/webhooks/1030821578390380654/symSSgNAhrBFhFBFHEa-mPpSjyeHmvvkBVZwraIMQATlY1KCUD30Ey15aOLaIafUZXXP";
+
+    await updateWebhookNameAndAvatar(webhookUrl, username, avatarData);
+    await executeWebhook(webhookUrl, {
+        content: message
+    });
+};
 
 process.on("uncaughtException", (err) => {
     console.error(err.stack);
@@ -18,7 +48,7 @@ process.on("uncaughtException", (err) => {
 });
 
 process.on("unhandledRejection", (reason, promise) => {
-  console.log("Unhandled Rejection at:", promise, "reason:", reason);
+    console.log("Unhandled Rejection at:", promise, "reason:", reason);
 });
 
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
@@ -127,7 +157,7 @@ const bot = createBot({
     }
 });
 
-app.ws("/*", {
+app.ws("/", {
     idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason every 2 minutes
     maxPayloadLength: 4096 * 4096,
 
@@ -161,7 +191,7 @@ app.ws("/*", {
 
         const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: userData.ip });
         if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
-        // throwing because chat NEEDS to die once this happens because it's most likely important
+        // throwing because chat NEEDS to die once this happens because it's most likely important [as of 10/15/22 i have no idea what this was meant to convey as the error is not thrown]
 
         if ((Array.isArray(data) && data[0]) || await isRemoteAddressAsnBan(userData.ip)) return ws.end(1, "you are banned");
 
@@ -175,7 +205,7 @@ app.ws("/*", {
                 const channel = config.CHANNELS[userRoom];
 
                 if (!userData?.ip || !username || !userRoom) {
-                    ws.end(1, "invalid join data");
+                    // ws.end(1, "invalid join data");
                 } else if (userlist.includes(username)) {
                     ws.end(1, "username taken");
                 } else if (!checkName(username)) {
@@ -184,7 +214,15 @@ app.ws("/*", {
                     ws.end(1, "username too long");
                 };
 
-                users.set(ws.id, { ...userData, username, avatar: getAvatar(username), room: userRoom });
+                const userAvatarUrl = getAvatar(username);
+
+                users.set(ws.id, {
+                    ...userData,
+                    username,
+                    avatar: userAvatarUrl,
+                    room: userRoom,
+                    avatarData: await encodeUserAvatar(userAvatarUrl)
+                });
                 const user = users.get(ws.id);
                 persistentUsers.set(ws.id, { ...user, id: ws.id });
 
@@ -259,7 +297,9 @@ app.ws("/*", {
                     }));
                 }).catch(() => { /* message gets eaten 😋 */ });
 
-                if (config.CHANNELS[users.get(ws.id).room]) await sendMessage(bot, config.CHANNELS[users.get(ws.id).room], {
+                if (users.get(ws.id).room === "rp") {
+                    await sendTestWebhookChatMessage(users.get(ws.id).username, users.get(ws.id).avatarData, wordFilter(noDiscordMentions(message.text))+`${attachmentUrl ? `\n${attachmentUrl}` : ""}`)
+                } else if (config.CHANNELS[users.get(ws.id).room]) await sendMessage(bot, config.CHANNELS[users.get(ws.id).room], {
                     content: `**${users.get(ws.id).username}:** ${wordFilter(noDiscordMentions(message.text))}${attachmentUrl ? `\n${attachmentUrl}` : ""}`,
                 });
                 break;
@@ -373,7 +413,7 @@ app.get("/unban", async (reply, req) => {
     const requestAddrs = req.getHeader("x-forwarded-for").split(", ");
     const modAddr = requestAddrs[0];
     const query = parseQuery(req.getQuery());
-    if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end("Invalid password!");
+    if (query.password !== config.MODERATION_PASSWORD) return reply.writeStatus("400").end("Invalid password!");
 
     reply.onAborted(() => {
         reply.aborted = true;
