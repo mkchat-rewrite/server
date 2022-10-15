@@ -534,8 +534,12 @@ function getColor(key) {
     return "#" + color;
 };
 
+// function getAvatar(key) {
+//     return `https://rail-proxy.mkchat.app/dicebear/avatars/${new Buffer.from(key || "", "utf8").toString("hex")}.svg?b=${getColor(key).replace("#", "%23")}`;
+// };
+
 function getAvatar(key) {
-    return `https://rail-proxy.mkchat.app/dicebear/avatars/${new Buffer.from(key || "", "utf8").toString("hex")}.svg?b=${getColor(key).replace("#", "%23")}`;
+    return `https://rail-proxy.mkchat.app/seasonal/halloween/avatars/${key}`;
 };
 
 async function acknowledgeDisconnect(username, room) {
