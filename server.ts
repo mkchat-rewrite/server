@@ -142,7 +142,7 @@ register({
 
 serve(async (req: Request) => {
     return await httpRequestHandler(req, router, wss);
-}, { port: 3000 });
+}, { port: Number(Deno.env.get("PORT")) ?? 3000 });
 
 function sendChatMessage(wss: SocketHandler, room: string, message: ChatMessage) {
     publish(wss, room, JSON.stringify({
