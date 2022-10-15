@@ -41,7 +41,10 @@ async function sendTestWebhookChatMessage(username, avatarData, message) {
     if (lastWebhookMessageUsername !== username) await updateWebhookNameAndAvatar(webhookUrl, username, avatarData);
 
     await executeWebhook(webhookUrl, {
-        content: message
+        content: message,
+        allowed_mentions: {
+            parse: []
+        }
     });
 
     lastWebhookMessageUsername = username;
