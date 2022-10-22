@@ -47,7 +47,7 @@ async function sendTestWebhookChatMessage(username, avatarData, message) {
         }
     });
 
-    lastWebhookMessageUsername = username;
+    lastWebhookMessageUsername = `${username} extradatatofixissueshopefully`;
 };
 
 process.on("uncaughtException", (err) => {
