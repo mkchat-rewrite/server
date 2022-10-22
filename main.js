@@ -16,15 +16,13 @@ import { fileTypeFromBuffer } from "file-type";
 let lastWebhookMessageUsername = "";
 
 async function updateWebhookNameAndAvatar(webhookUrl, username, avatarData) {
-    const cleanUsername = username || "{unnamed}";
-    
     await request(webhookUrl, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            name: cleanUsername,
+            name: username,
             avatar: avatarData
         })
     });
@@ -215,7 +213,7 @@ app.ws("/", {
                 const channel = config.CHANNELS[userRoom];
 
                 if (!userData?.ip || !username || !userRoom) {
-                    // ws.end(1, "invalid join data");
+                    ws.end(1, "invalid join data");
                 } else if (userlist.includes(username)) {
                     ws.end(1, "username taken");
                 } else if (!checkName(username)) {
