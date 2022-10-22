@@ -16,13 +16,15 @@ import { fileTypeFromBuffer } from "file-type";
 let lastWebhookMessageUsername = "";
 
 async function updateWebhookNameAndAvatar(webhookUrl, username, avatarData) {
+    const cleanUsername = username || "{unnamed}";
+    
     await request(webhookUrl, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            name: username,
+            name: cleanUsername,
             avatar: avatarData
         })
     });
@@ -47,7 +49,7 @@ async function sendTestWebhookChatMessage(username, avatarData, message) {
         }
     });
 
-    lastWebhookMessageUsername = `${username} extradatatofixissueshopefully`;
+    lastWebhookMessageUsername = username;
 };
 
 process.on("uncaughtException", (err) => {
