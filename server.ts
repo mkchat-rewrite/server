@@ -18,7 +18,7 @@ const tempAccountStore = new Map<string, UserAccount>();
 register({
     router,
     method: "POST",
-    route: "/oauth/account/register",
+    route: "/auth/account/register",
     handler: async (req: Request) => {
         const data = await req.formData();
         const {
@@ -48,7 +48,7 @@ register({
 register({
     router,
     method: "POST",
-    route: "/oauth/account/login",
+    route: "/auth/account/login",
     handler: async (req: Request) => {
         console.log(await req.blob());
         return new Response("test");
