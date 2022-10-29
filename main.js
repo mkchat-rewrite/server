@@ -308,7 +308,10 @@ app.ws("/", {
                 /*if (users.get(ws.id).room === "rp") {
                     await sendTestWebhookChatMessage(users.get(ws.id).username, users.get(ws.id).avatarData, wordFilter(noDiscordMentions(message.text))+`${attachmentUrl ? `\n${attachmentUrl}` : ""}`)
                 } else */if (config.CHANNELS[users.get(ws.id).room]) await sendMessage(bot, config.CHANNELS[users.get(ws.id).room], {
-                    content: `**${users.get(ws.id).username}:** ${wordFilter(noDiscordMentions(message.text))}${attachmentUrl ? `\n${attachmentUrl}` : ""}`,
+                    content: `**${users.get(ws.id).username}:** ${wordFilter(/*noDiscordMentions(*/message.text/*)*/)}${attachmentUrl ? `\n${attachmentUrl}` : ""}`,
+                    allowedMentions: {
+                        parse: []
+                    }
                 });
                 break;
             case "kickme":
