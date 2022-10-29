@@ -30,18 +30,21 @@ register({
         if (!(email && username && password)) return new Response("Missing Field(s)", { status: 400 });
 
         if (tempAccountStore.get(email)) return new Response("Email Already Registered!", { status: 409 });
-    
-        // set by email for now because doesnt matter and email should be unique anyway
-        tempAccountStore.set(email, {
+
+        const nonCrucialDetails = {
             id: nanoid(30),
             createdAt: Date.now(),
             email,
-            username,
+            username
+        };
+
+        tempAccountStore.set(email, {
+            ...nonCrucialDetails,
             password,
             connectionAddresses: []
         });
 
-        return new Response("", { status: 200 });
+        return new Response(JSON.stringify(nonCrucialDetails), { status: 200 });
     }
 });
 
