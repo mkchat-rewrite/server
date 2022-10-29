@@ -240,13 +240,13 @@ export async function checkBan(query) {
 };
 
 export function parseEmoji(text) {
-    const pattern = /&lt;(a:|:)[a-zA-Z0-9_-]*:[0-9]{18}&gt;/g;
+    const pattern = /&lt;(a:|:)[a-zA-Z0-9_-]*:[0-9]{18,19}&gt;/g;
     const emojis = text.match(pattern);
       
     if (!emojis) return text;
 
     for(const emoji of emojis) {
-        const id = emoji.match(/[0-9]{18}/g);
+        const id = emoji.match(/[0-9]{18,19}/g);
         const format = emoji.startsWith("&lt;a") ? "gif" : "png";
 
         text = text.replace(emoji, `<img class="discordEmoji" src="${config.PROXY_URL}/discord/emojis/${id}.${format}" alt="discord emoji" style="height: 1.375em; width: 1.375em;" />`);
