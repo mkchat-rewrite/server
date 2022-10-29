@@ -1,22 +1,17 @@
 import { config as dotenv } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
 import { serve } from "https://deno.land/std@0.157.0/http/server.ts";
+import { nanoid } from "https://deno.land/x/nanoid@v3.0.0/mod.ts";
 import { createRouter, register } from "./modules/http/index.ts";
 import { createSocketHandler, broadcast, publish, subscribe, unsubscribe, Connection, SocketHandler } from "./modules/websocket/index.ts";
 import { httpRequestHandler } from "./methods/httpRequestHandler.ts";
 import { tryParseJson } from "./methods/tryParseJson.ts";
-import { User, ChatMessage } from "./types.ts";
+import { User, ChatMessage, UserAccount } from "./types.ts";
 
 dotenv({ export: true });
 
 const users = new Map<string, User>();
 
 const router = createRouter({});
-
-interface UserAccount {
-    username: string;
-    password: string;
-    email: string;
-};
 
 const tempAccountStore = new Map<string, UserAccount>();
 
@@ -30,14 +25,20 @@ register({
             email,
             username,
             password
-        } = Object.fromEntries(data.entries());
+        } = Object.fromEntries(Array.from(data.entries()).map(([k, v]) => [k, v as string]));
 
         if (!(email && username && password)) return new Response("Missing Field(s)", { status: 400 });
 
-        tempAccountStore.set(username as string, {
+        if (tempAccountStore.get(email)) return new Response("Email Already Registered!", { status: 409 });
+    
+        // set by email for now because doesnt matter and email should be unique anyway
+        tempAccountStore.set(email, {
+            id: nanoid(30),
+            createdAt: Date.now(),
             email,
             username,
-            password
+            password,
+            connectionAddresses: []
         });
 
         return new Response("", { status: 200 });

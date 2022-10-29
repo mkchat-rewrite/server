@@ -18,6 +18,7 @@ export interface ChatMessage {
 
 export interface UserAccount {
     id: string, // unique id (immutable)
+    createdAt: number, // unix timestamp
     email: string,
     username: string,
     password: string, // DO NOT STORE PASSWORD PLAINTEXT, THIS WILL BE SALTED HASH BECAUSE SECURITY!
