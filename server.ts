@@ -12,6 +12,14 @@ const users = new Map<string, User>();
 
 const router = createRouter({});
 
+interface UserAccount {
+    username: string;
+    password: string;
+    email: string;
+};
+
+const tempAccountStore = new Map<string, UserAccount>();
+
 register({
     router,
     method: "POST",
@@ -26,9 +34,13 @@ register({
 
         if (!(email && username && password)) return new Response("Missing Field(s)", { status: 400 });
 
-        console.log(email, username, password);
+        tempAccountStore.set(username as string, {
+            email,
+            username,
+            password
+        });
 
-        return new Response("test");
+        return new Response("", { status: 200 });
     }
 });
 
