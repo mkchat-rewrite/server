@@ -1,4 +1,4 @@
-import { pathToRegexp } from "https://deno.land/x/path_to_regexp@v6.2.1/index.ts";
+import { pathToRegexp } from "../../../deps.ts";
 import { HttpRouter } from "../index.ts";
 
 export async function handleRoutes(req: Request, router: HttpRouter): Promise<Response> {

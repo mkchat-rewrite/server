@@ -1,1 +1,2 @@
-import { createBot, startBot, Intents } from "https://deno.land/x/discordeno@16.0.0/mod.ts";
+import { discordeno } from "../deps.ts";
+const { createBot, startBot, Intents } = discordeno;

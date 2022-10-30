@@ -1,18 +1,13 @@
-import { config as dotenv } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
-import { serve } from "https://deno.land/std@0.157.0/http/server.ts";
-import { nanoid } from "https://deno.land/x/nanoid@v3.0.0/mod.ts";
+import { dotenv, nanoid, httpServer } from "./deps.ts";
 import { createRouter, register } from "./modules/http/index.ts";
 import { createSocketHandler, broadcast, publish, subscribe, unsubscribe, Connection, SocketHandler } from "./modules/websocket/index.ts";
 import { httpRequestHandler } from "./methods/httpRequestHandler.ts";
-import { tryParseJson } from "./methods/tryParseJson.ts";
 import { User, ChatMessage, UserAccount } from "./types.ts";
+const { serve } = httpServer;
 
 dotenv({ export: true });
 
-const users = new Map<string, User>();
-
 const router = createRouter({});
-
 const tempAccountStore = new Map<string, UserAccount>();
 
 register({
