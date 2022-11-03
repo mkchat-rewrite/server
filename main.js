@@ -399,7 +399,7 @@ app.get("/doban", async (reply, req) => {
 
     if (reply.aborted) return;
 
-    const isBanned = await checkBan({ ip: query.ip }).catch(err => console.error(err));
+    const isBanned = await checkBan(supabase, { ip: query.ip }).catch(err => console.error(err));
     if (isBanned) return reply.writeStatus("400").end("User already banned!");
 
     const banData = {
@@ -432,7 +432,7 @@ app.get("/unban", async (reply, req) => {
 
     if (reply.aborted) return;
 
-    const isBanned = await checkBan({ ip: query.ip }).catch(err => console.error(err));
+    const isBanned = await checkBan(supabase, { ip: query.ip }).catch(err => console.error(err));
     if (!isBanned) return reply.writeStatus("400").end("User isn't banned!");
 
     const { data, error } = await supabase.from(config.DATABASE.TABLE).delete().match({ ip: query.ip });
