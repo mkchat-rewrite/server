@@ -227,7 +227,7 @@ export function iteratorToArr(iterator) {
     return result;
 };
 
-export async function checkBan(query) {
+export async function checkBan(supabase, query) {
     const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match(query);
 
     if (error) {
