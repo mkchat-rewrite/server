@@ -10,6 +10,8 @@ dotenv({ export: true });
 const router = createRouter({});
 const tempAccountStore = new Map<string, UserAccount>();
 
+const objectFromFormData = (formData: FormData) => Object.fromEntries(Array.from(formData.entries()).map(([k, v]) => [k, v as string]));
+
 register({
     router,
     method: "POST",
@@ -24,7 +26,7 @@ register({
 
         if (!(email && username && password)) return new Response("Missing Field(s)", { status: 400 });
 
-        if (tempAccountStore.get(email)) return new Response("Email Already Registered!", { status: 409 });
+        if (tempAccountStore.get(email)) return new Response("Email Already Registered", { status: 409 });
 
         const nonCrucialDetails = {
             id: nanoid(30),
@@ -48,8 +50,17 @@ register({
     method: "POST",
     route: "/auth/account/login",
     handler: async (req: Request) => {
-        console.log(await req.blob());
-        return new Response("test");
+        const data = await req.formData();
+        const {
+            email,
+            password
+        } = Object.fromEntries(Array.from(data.entries()).map(([k, v]) => [k, v as string]));
+
+        if (!(email && password)) return new Response("Missing Field(s)", { status: 400 });
+
+        const account = tempAccountStore.get(email);
+
+        if (!account) return new Response("Invalid Credentials", { status: 409 });
     }
 });
 
@@ -198,3 +209,15 @@ function sendChatMessage(wss: SocketHandler, room: string, message: ChatMessage)
         }
     }));
 };
+
+/* naming conventions or whatever:
+* use 'from' instead of 'to'; ex. formDataToObject -> objectFromFormData
+* use 'fetch' instead of 'get'; ex. getUsers -> fetchUsers
+* camel case - functions & variables
+* pascal case - Classes (ew) & types
+* capitalized snake case - constant variables; ex. env vars & api endpoints
+* 
+* 
+* 
+* 
+*/
