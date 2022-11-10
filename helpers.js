@@ -329,6 +329,7 @@ export async function isRemoteAddressAsnBan(addr) {
         "AS63023", // globaltelehost
         "AS9009", // m247
         "AS25971", // milwaukee.k12.wi.us
+        "AS5650" // frontier.com - this might have bad result but idc rn
         // "AS20115" // globaltelehost (apparently bans charter com too idk thats weird)
         //"AS21928" // t-mobile 💀
     ];
