@@ -1,10 +1,16 @@
 done:
     websocket event/message handling with pub/sub and global braodcasting
-    basic http routing
+    basic http routing (replaced with hono [https://honojs.dev/])
 
 todo:
     account system with message & room ownership
-    more sophisticated http router
     giphy integration
-    discord mirror (run in seperate process)
-    store room messages so on connect users see previous messages
+    mirror plugins (currently only discord is planned, however extensibility would be nice)
+    store room messages so users can read previous messages
+
+naming conventions or whatever:
+ * use 'from' instead of 'to'; ex. formDataToObject -> objectFromFormData
+ * use 'fetch' & 'generate' instead of 'get'; ex. getUsers -> fetchUsers, getRandomName -> generateRandomName
+ * camel case - functions & variables
+ * pascal case - Classes (ew) & types
+ * capitalized snake case - constant variables; ex. env vars & api endpoints
