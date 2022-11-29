@@ -12,6 +12,7 @@ import { createClient } from "@supabase/supabase-js";
 import { executeWebhook, parseMessage, parseQuery, filterName, checkName, filterMessage, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom, isRemoteAddressAsnBan, abToStr } from "./helpers.js";
 import config from "./config.js";
 import { fileTypeFromBuffer } from "file-type";
+import { S3 } from "@aws-sdk/client-s3";
 
 let lastWebhookMessageUsername = "";
 
@@ -62,6 +63,14 @@ process.on("unhandledRejection", (reason, promise) => {
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
 const app = uws.App();
 const supabase = createClient(config.DATABASE.URL, config.DATABASE.KEY);
+const s3 = new S3({
+    region: "auto",
+    endpoint: config.CLOUDFLARE_R2.URL,
+    credentials: {
+        accessKeyId: config.CLOUDFLARE_R2.ACCESS_KEY,
+        secretAccessKey: config.CLOUDFLARE_R2.SECRET,
+    }
+});
 
 class UserMap extends Map {
     list(room) {
@@ -168,6 +177,7 @@ const bot = createBot({
 app.ws("/", {
     idleTimeout: 32, //otherwise the client will disconnect for seemingly no reason every 2 minutes
     maxPayloadLength: 4096 * 4096,
+    compression: uws.SHARED_COMPRESSOR,
 
     upgrade: (reply, req, context) => {
         const ips = req.getHeader("x-forwarded-for").split(",");
@@ -284,8 +294,13 @@ app.ws("/", {
                     if (fileData && (videoFormats.includes(fileData.ext) || imageFormats.includes(fileData.ext))) {
                         const fileHash = createHash("sha1").update(messageFile).digest("hex");
                         const fileName = `${fileHash}.${fileData.ext.replace("apng", "png")}`;
-                        const { data: ret, error: err } = await supabase.storage.from("attachments").upload(fileName, fileBuffer);
-                        attachmentUrl = `${config.PROXY_URL}/attachments/${fileName}`;
+                        console.log(await s3.putObject({
+                            Bucket: "mkchat-attachments",
+                            Key: fileName,
+                            Body: fileBuffer,
+                            ContentType: fileData.mime
+                        }));
+                        attachmentUrl = `https://r2-attachments.mkchat.app/${fileName}`;
 
                         if (videoFormats.includes(fileData.ext)) {
                             attachment = `<video class="attachment" alt="attachment" controls><source src="${attachmentUrl}" type="${fileData.mime}" /></video>`;
@@ -353,7 +368,7 @@ app.ws("/", {
     }
 });
 
-registerWebAssets("web"); // registers endpoints to serve client code at root
+// registerWebAssets("web"); // registers endpoints to serve client code at root
 
 app.get("/modlogin", (reply, req) => {
     const query = parseQuery(req.getQuery());

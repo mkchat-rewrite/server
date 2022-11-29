@@ -8,6 +8,11 @@ export default Object.freeze({
     ACTION_WEBHOOK_URL: "https://discord.com/api/webhooks/991068566021341185/Xv4alF0JL6vK8ayyU09LAZY8gi2gZjWI5JqXgcYi-ApCye7Yj7_4cQQKZvNJ0wLG13RO",
     MODERATION_PASSWORD: "wrinse4riboli<meatablesg{droidn)lopes",
     GIPHY_KEY: "z2rkRbjQ3RY3kuYiJ8zrNeZT4jGbXZXW",
+    CLOUDFLARE_R2: {
+        URL: "https://d35dc05b5aeb82d169faf1646b005343.r2.cloudflarestorage.com",
+        ACCESS_KEY: "c93e87ecb4ad67a970882f3bab3c5d28",
+        SECRET: "cdb47c3fe40b29448c108ae4df0e36dc0d091be55dc852a51f3fecfd233581ad"
+    },
     ROOMS: {
         "991040161141895238": "main",
         "991040184638394418": "main2",
