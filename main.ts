@@ -56,21 +56,13 @@ const wss = createSocketHandler({
 
                     console.log(users.get(id));
 
-                    // broadcast(wss, JSON.stringify({
-                    //     type: "JOIN",
-                    //     data: {
-                    //         id,
-                    //         username,
-                    //     }
-                    // }), room);]
-
                     publish(wss, conn, JSON.stringify({
                         type: "USER_JOINED",
                         data: {
                             id,
                             username,
                         }
-                    }), room)
+                    }), room);
 
                     break;
                 }
@@ -79,7 +71,17 @@ const wss = createSocketHandler({
             }
         },
         close: (conn: Connection, event: CloseEvent) => {
-            console.log("close", conn, event);
+            const user = users.get(conn?.id);
+
+            if (user) return;
+
+            publish(wss, conn, JSON.stringify({
+                type: "USER_LEFT",
+                data: {
+                    id: user?.id,
+                    username: user?.username
+                }
+            }), room);
         }
     }
 });
