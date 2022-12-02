@@ -1,6 +1,7 @@
 import * as traceUnhandled from "trace-unhandled";
 traceUnhandled.register();
 import fs from "fs/promises";
+import path from "path";
 import { createHash } from "crypto";
 import uws from "uWebSockets.js";
 import { request } from "undici";
@@ -368,7 +369,7 @@ app.ws("/", {
     }
 });
 
-// registerWebAssets("web"); // registers endpoints to serve client code at root
+registerWebAssets("web"); // registers endpoints to serve client code at root
 
 app.get("/modlogin", (reply, req) => {
     const query = parseQuery(req.getQuery());
@@ -479,25 +480,21 @@ app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening"
 await startBot(bot);
 
 // folder name supplied should have no slashes (unless subfolder ex. folder/subfolder)
+// OMFG THIS FUNCTION IS ASS AND I HATE IT
 export async function registerWebAssets(folder) {
     const files = await fs.readdir(folder);
 
     for (const file of files) {
-        if (!file.includes(".")) {
-            registerWebAssets(`./${folder}/${file}`);
+        const fPath = path.join(folder, file);
+
+        if ((await fs.stat(fPath)).isDirectory()) {
+            await registerWebAssets(fPath);
             continue;
         };
 
-        let data;
-
-        try {
-            data = await fs.readFile(`./${folder}/${file}`);
-        } catch {
-            continue;
-        };
-
-        const prefix = folder.replace(/(.\/web|web)/, ""); // hardcoding this makes passing folder name as param useless, but who cares
         const mimeType = mime.lookup(file);
+        const prefix = folder.replace("web", "").replace(/\\/g, "/");
+        const data = await fs.readFile(fPath);
 
         app.get(`${prefix}/${file}`, (reply, _req) => {
             reply.writeHeader("Content-Type", mimeType).end(data);
@@ -506,10 +503,6 @@ export async function registerWebAssets(folder) {
         if (file !== "index.html") continue;
 
         app.get(prefix || "/", (reply, _req) => {
-            reply.writeHeader("Content-Type", mimeType).end(data);
-        });
-
-        app.get(`${prefix}/`, (reply, _req) => {
             reply.writeHeader("Content-Type", mimeType).end(data);
         });
     };
