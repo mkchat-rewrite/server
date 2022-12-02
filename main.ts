@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.166.0/http/server.ts";
 import { Hono } from "https://deno.land/x/hono@v2.5.6/mod.ts";
 import { createSocketHandler, broadcast, publish, subscribe, unsubscribe, Connection, SocketHandler } from "./modules/websocket/index.ts";
 import { requestHandler } from "./methods/requestHandler.ts";
+import { tryParseJson } from "./methods/tryParseJson.ts";
 import { oauthRouter } from "./routes/oauth.ts";
 
 dotenv({ export: true });
@@ -62,7 +63,7 @@ const wss = createSocketHandler({
     }
 });
 
-serv.get("/", ctx => ctx.text("Iridescent development server online."));
+serv.get("/", ctx => ctx.text("(cock) development server online."));
 
 serv.route("/", oauthRouter);
 
