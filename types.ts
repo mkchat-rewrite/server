@@ -16,6 +16,7 @@ export interface ChatMessage {
     attachments: string[]
 };
 
+// stfu me (accounts can wait)
 export interface UserAccount {
     id: string, // unique id (immutable)
     createdAt: number, // unix timestamp

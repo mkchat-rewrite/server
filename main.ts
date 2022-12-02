@@ -5,8 +5,11 @@ import { createSocketHandler, broadcast, publish, subscribe, unsubscribe, Connec
 import { requestHandler } from "./methods/requestHandler.ts";
 import { tryParseJson } from "./methods/tryParseJson.ts";
 import { oauthRouter } from "./routes/oauth.ts";
+import { User } from "./types.ts";
 
 dotenv({ export: true });
+
+const users = new Map<string, User>();
 
 const serv = new Hono();
 const wss = createSocketHandler({
@@ -51,6 +54,24 @@ const wss = createSocketHandler({
                     subscribe(wss, conn, room);
                     users.set(id, { ...user, username, room });
 
+                    console.log(users.get(id));
+
+                    // broadcast(wss, JSON.stringify({
+                    //     type: "JOIN",
+                    //     data: {
+                    //         id,
+                    //         username,
+                    //     }
+                    // }), room);]
+
+                    publish(wss, conn, JSON.stringify({
+                        type: "USER_JOINED",
+                        data: {
+                            id,
+                            username,
+                        }
+                    }), room)
+
                     break;
                 }
                 default:
@@ -58,7 +79,7 @@ const wss = createSocketHandler({
             }
         },
         close: (conn: Connection, event: CloseEvent) => {
-            // console.log("close", conn, event);
+            console.log("close", conn, event);
         }
     }
 });
