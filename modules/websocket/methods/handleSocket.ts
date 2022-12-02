@@ -1,4 +1,4 @@
-import { nanoid } from "../../../deps.ts";
+import { nanoid } from "https://deno.land/x/nanoid@v3.0.0/mod.ts";
 import { SocketHandler, Connection } from "../index.ts";
 
 export function handleSocket(req: Request, { connections, eventHandlers, uniqueIdLength }: SocketHandler, socket: WebSocket) {
@@ -7,13 +7,13 @@ export function handleSocket(req: Request, { connections, eventHandlers, uniqueI
 
     socket.onopen = async () => {
         connections.set(id, connection);
-        return await eventHandlers?.open?.(connection);
+        return void(await eventHandlers?.open?.(connection));
     };
 
-    socket.onmessage = async (event: MessageEvent) => await eventHandlers?.message?.(connections.get(id) as Connection, event);
+    socket.onmessage = async (event: MessageEvent) => void(await eventHandlers?.message?.(connections.get(id) as Connection, event));
 
     socket.onclose = async (event: CloseEvent) => {
         connections.delete(id);
-        return await eventHandlers?.close?.(connection, event);
+        return void(await eventHandlers?.close?.(connection, event));
     };
 };

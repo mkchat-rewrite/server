@@ -1,4 +1,4 @@
-import { Hono } from "https://deno.land/x/hono@v2.5.1/mod.ts";
+import { Hono } from "https://deno.land/x/hono@v2.5.6/mod.ts";
 
 const router = new Hono();
 
