@@ -447,8 +447,6 @@ app.get("/unban", async (reply, req) => {
     });
 
     if (reply.aborted) return;
-    
-    if (query.ip === "174.209.105.218") return reply.writeStatus("400").end("fuck off bobster");
 
     const isBanned = await checkBan(supabase, { ip: query.ip }).catch(err => console.error(err));
     if (!isBanned) return reply.writeStatus("400").end("User isn't banned!");
