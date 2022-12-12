@@ -14,7 +14,6 @@ import { executeWebhook, parseMessage, parseQuery, filterName, checkName, filter
 import config from "./config.js";
 import { fileTypeFromBuffer } from "file-type";
 import { S3 } from "@aws-sdk/client-s3";
-import { ChatGPTAPI } from "chatgpt";
 
 let lastWebhookMessageUsername = "";
 
@@ -73,13 +72,6 @@ const s3 = new S3({
         secretAccessKey: config.CLOUDFLARE_R2.SECRET,
     }
 });
-const chatGPT = new ChatGPTAPI({
-    sessionToken: "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..-vFkef5UvHz5FGxG.MCp2gagwVZV3r4E4ZaBRIS1pJTp5_BYnHYm4bpIJAjwuw5iRdgirttTSFJ4Spld-pP0efVwJCPt2l_zkjJHwZ51NctGw3xf4iYZzZIAf5GweN1622B1vmlbeYMlQz3Qnwa1GTDz2-Yo0mze5tE8y7NvU4PeliUg9EJuly9-F5qburvNPwLXI06wcI5_FPSq4Jo5spcXo1K_45y7pZ92aVT2YrKdJQxzEe_cxP-ZTv5dKWf2XLzg6U30UIP3VAc2EyRvI0mmTDlhatjIBO9wVl7D5wtQKWf1wGXNAgHn49hbu17DKQuHBeI3zH4vemmFfmP40okGqL5xoX_E3c8rfxYqtZ4IKDUnaZ0kTT1aMeYUVA_C3bX6ZV38nlUTgcEASz2SkN-z3f0nG8JmJNypzf0XdHOrNKpzd8VPhMMomXWkx8JtqUR4Mi5uglzBH-7yhgvhDsbGgwtc8gCtEC8gPQC8rlTPdWIVTPbzOBUhrvRgHEhnJd7TiQD3DIXMfsGW9S08NOc8kEq6dEwdPMrUdTlHcLolyq_CzKj9FJw8bCHBGvkfO-F-uBuYyuwR7P4PHefZtPpUsaXAfZwAqylD9wibc64va9XruImkahj4zIAexVS2LeJxR8dNcrnhgeS_NboGHUOImjssrNnnxsFi3IljEAt_PmQ4tSyAisjYNjsCmOsWFugdJOUdWKmJbXVRfsNNO3czRwAt5_kvEzyiyzo5vzLFpQ4yhY8R67ejW-00wmvBBDJFYZCUWI7Gu1r4awjD4RospNfBy1osWjGuf7zAHPiPtdW8AgXGYftuSSLtl_CO6ZybXo_2JPI-LS_zwD6uRgaFmcbJsiGo-HhmmqjHQWQCrqTmxcQJXkh1sGks0_pkHE_iIff-78vQGPXAGZ9fQ5Zb3WYIWIkm23iG2tJwdJNCsJU0L1ImonkUA5cgUczCwhyltDR1BKC2tEo6fMNArwXbwQa7oQPIAg2h0_I0OmDLh7dKugnmmmPP8G0qaSw5Gy2qtgxzVfiT3MES43duU0kyxSXaE9PXleZWqrC8niumEjvoOQHYcqxPlL99yYtWon9Kd5XsrGIn1ruhc456BTfLE743FgYlKMkOgr3Q7ddW0gQb-RopC7A0129UabP-nym731D2Ay7zGvXXr63tHcjHd1wsGxq6yyuWTm6jgCk7x71izrHCbdyop7BpLhwAPg9tGpk7tCRsPYSleCFgmy0UihA2sv-LQleUw2Uv3p8HpGI1-o3a9VZ-P89OJVlsw75Q9QP6-LueANMT1NQcXTiBpGq0JQSI5W_Axv9P6kK9cXG0U7JVwgJi8kfdwcNEQONzrJ4Th_siRk4ude72Aax9bGb-UUdt6WQt6KetrxBO2IU3bwv0RcjgdbjkuFmcWSgzCE9PUrpFwn553Mp9vlEVfy9pD9Qah7Po_FyuYyJ0UEq56cCHLcwRK02IdNgpzIf6jjcvJRmwTjpxvLFzVQk68vkpRsKs7WF1qW1q2Kva7Wmla3NTjnh36aySWB57F3r1CxrF4laoha07zIZRZVYbAyuYXHWDKnZw660fcs8bxQ-aW6BHq7RUoM52pMvhd-AlxCslSUfZ6ZUYgXntwIZVH9RNEYt3A-E58MBxE-NE52PZb525qFFnmY3bZ8egucRXj3NbPMln620G6l0tTuK38ZBoJL9Z1xn_EnlirabJY3j_99Ri_l-W24DCSicm5ZcMcrH3xm6v_Y61KAFC9aAfDnguwBYA6G3Rw8GEgpiJeE3s-1Ij1vVOvHRfzksVX5pLDTYOwHx3dPkCOoSdCfymfMnc75Gk8Z6oFgRXEq00zfqdpobOJ9bS6drMpkT7UdbTPx8xEo1YPNrhLbB3tiHC31JPEVXKhZp9C8BFUbwJ3sNvDEB-cC2drQu0GdoD7KyczlUzEm8EYp-eCFRsvibohcf3-gDkyiitaV7ztX4gJhndslVxjhLP-3TZrgMa781AXkP93Po_xxHtuY96Zhai4K5etEUdNRFFChw7iCb6-VcDFiOBYhn11ZmARTznA7-EXPzUiyM91CwrHYfXuamKzMeyLyUCj_wb-X5i2CtjwcEzYwep1osZ6revaZMi1FtvvEtdnXCOkR9xbIYV_yl-CrpbZ9Sdb0--NPPssPCS771FuSPbXuzg48M2xFWDtreRMFUBSI0QWuDB5B0_KY18Bds4e1VtFTGSoinx0p2fJjpz5-QitEc3v_TBNBQN2VFcFU_-CwjFEvBTkQbZXHaTjiYg.Bl0IN3ajgpePc9HcSRKYcQ",
-    clearanceToken: "0rj.76HCgdrv3koYN40hpttecdFc1JDS2ft1pp4IBFQ-1670819861-0-160",
-    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
-});
-
-await chatGPT.ensureAuth();
 
 class UserMap extends Map {
     list(room) {
@@ -149,7 +141,7 @@ const bot = createBot({
                 }));
             };
 
-            const prefix = config.BOT_PREFIX;
+            const prefix = "m?";
             if (!message.content.startsWith(prefix)) return;
 
             const args = message.content.slice(prefix.length).trim().split(" ");
@@ -159,7 +151,7 @@ const bot = createBot({
             try {
                 if (command.meta.restricted && !message.member.roles.includes(config.ROLE_IDS.MODERATION)) throw new Error("You do not have the required permission to use this command!");
 
-                if (command) await command.exec(bot, message, args, config, users, chatGPT);
+                if (command) await command.exec(bot, message, args, config, users);
             } catch (err) {
                 sendMessage(bot, message.channelId, {
                     embeds: [{
@@ -582,7 +574,7 @@ app.ws("/moderation", {
     },
     drain: ws => {
         console.log(`WebSocket backpressure: ${ws.getBufferedAmount()}`);
-        // not handling backpressue because im lazy lmfao
+        // not handling backpressue because im lazy lmfao   
     },
     close: async (ws, _code, _msg) => {
         moderators.delete(ws.id);

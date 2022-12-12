@@ -1,7 +1,7 @@
 import { sendMessage, addRole, removeRole, getMember } from "discordeno";
 
 export default {
-    exec: async (bot, message, _args, config, _users, _chatGPT) => {
+    exec: async (bot, message, _args, config, users) => {
         const targetUserId = message.mentionedUserIds[0];
         const targetIsChatBanned = (await getMember(bot, message.guildId, targetUserId)).roles.includes(config.ROLE_IDS.CHAT_BAN);
 

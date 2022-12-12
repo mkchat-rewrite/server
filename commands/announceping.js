@@ -1,7 +1,7 @@
 import { sendMessage, editRole, deleteMessage } from "discordeno";
 
 export default {
-    exec: async (bot, message, _args, config, _users, _chatGPT) => {
+    exec: async (bot, message, _args, config, users) => {
         await deleteMessage(bot, message.channelId, message.id);
 
         await editRole(bot, message.guildId, config.ROLE_IDS.CHAT_PING, { mentionable: true });
