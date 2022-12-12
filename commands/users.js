@@ -1,7 +1,7 @@
 import { sendMessage } from "discordeno";
 
 export default {
-    exec: async (bot, message, args, config, users) => {
+    exec: async (bot, message, args, config, users, _chatGPT) => {
         const room = args.join(" ");
 
         sendMessage(bot, message.channelId, { embeds: [{
