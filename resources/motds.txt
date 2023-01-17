@@ -1,0 +1,4 @@
+test motd
+motd 2
+another motd
+motd number four
