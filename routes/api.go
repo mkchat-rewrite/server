@@ -22,20 +22,7 @@ func randomMotdByte() []byte {
 		panic(err)
 	}
 
-	var motds [][]byte
-	index := 0
-
-	for _, b := range data {
-		if len(motds) == index {
-			motds = append(motds, []byte{})
-		}
-
-		if b == 10 {
-			index++
-		} else {
-			motds[index] = append(motds[index], b)
-		}
-	}
+	motds := splitBytes(data, 10) // 10 == "\n"
 
 	rand.Seed(time.Now().UnixNano())
 	min := 0
@@ -59,6 +46,25 @@ func randomMotdStr() string {
 	i := rand.Intn(max-min) + min
 
 	return motds[i]
+}
+
+func splitBytes(a []byte, sep byte) [][]byte {
+	var res [][]byte
+	index := 0
+
+	for _, b := range a {
+		if len(res) == index {
+			res = append(res, []byte{})
+		}
+
+		if b == sep {
+			index++
+		} else {
+			res[index] = append(res[index], b)
+		}
+	}
+
+	return res
 }
 
 // (average "randomMotd" and fmt.Println result exec time over 10 runs):
