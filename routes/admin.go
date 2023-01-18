@@ -21,10 +21,7 @@ func Admin(router chi.Router) {
 	})
 
 	router.Get("/users", func(w http.ResponseWriter, r *http.Request) {
-		_, err := WriteJson(w, users)
-		if err != nil {
-			panic(err)
-		}
+		WriteJson(w, users)
 	})
 
 	router.Get("/bans", func(w http.ResponseWriter, r *http.Request) {
@@ -43,15 +40,10 @@ func Admin(router chi.Router) {
 func WriteJson(w http.ResponseWriter, v any) (int, error) {
 	data, err := json.Marshal(v)
 	if err != nil {
-		return 0, err
+		w.Write([]byte(err.Error()))
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 
-	bytes, err := w.Write(data)
-	if err != nil {
-		return 0, err
-	}
-
-	return bytes, nil
+	return w.Write(data)
 }
