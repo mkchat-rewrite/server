@@ -4,14 +4,13 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 )
 
-func Api(router chi.Router) {
-	router.Get("/motd", func(w http.ResponseWriter, r *http.Request) {
+func Motd(router chi.Router) {
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write(randomMotdByte())
 	})
 }
@@ -23,22 +22,6 @@ func randomMotdByte() []byte {
 	}
 
 	motds := splitBytes(data, 10) // 10 == "\n"
-
-	rand.Seed(time.Now().UnixNano())
-	min := 0
-	max := len(motds)
-	i := rand.Intn(max-min) + min
-
-	return motds[i]
-}
-
-func randomMotdStr() string {
-	data, err := os.ReadFile("./resources/motds.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	motds := strings.Split(string(data), "\n")
 
 	rand.Seed(time.Now().UnixNano())
 	min := 0
@@ -66,6 +49,22 @@ func splitBytes(a []byte, sep byte) [][]byte {
 
 	return res
 }
+
+// func randomMotdStr() string {
+// 	data, err := os.ReadFile("./resources/motds.txt")
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	motds := strings.Split(string(data), "\n")
+
+// 	rand.Seed(time.Now().UnixNano())
+// 	min := 0
+// 	max := len(motds)
+// 	i := rand.Intn(max-min) + min
+
+// 	return motds[i]
+// }
 
 // (average "randomMotd" and fmt.Println result exec time over 10 runs):
 //     string manipulation: 88.8514µs

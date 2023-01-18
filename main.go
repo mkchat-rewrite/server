@@ -17,7 +17,10 @@ func main() {
 		w.Write([]byte("Hello World!"))
 	})
 
-	router.Route("/api", routes.Api)
+	router.Route("/api", func(r chi.Router) {
+		r.Route("/motd", routes.Motd)
+		r.Route("/_admin", routes.Admin)
+	})
 
 	http.ListenAndServe(":3000", router)
 }
