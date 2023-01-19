@@ -30,8 +30,9 @@ func main() {
 	})
 
 	router.Route("/api", func(r chi.Router) {
-		r.Route("/motd", routes.Motd)
 		r.Route("/_admin", routes.Admin)
+		r.Route("/motd", routes.Motd)
+		r.Route("/rooms", routes.Rooms)
 	})
 
 	if err := http.ListenAndServe(":8080", router); err != nil {

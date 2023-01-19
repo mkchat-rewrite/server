@@ -44,21 +44,13 @@ func Admin(router chi.Router) {
 	})
 
 	router.Get("/bans", func(w http.ResponseWriter, r *http.Request) {
-		col := common.GetDBCollection("bans")
-
-		users := make([]BanEntry, 0)
-		cursor, err := col.Find(r.Context(), bson.M{})
+		bans, err := common.FetchFromDBAll[BanEntry]("bans", bson.M{})
 		if err != nil {
 			common.WriteInternalServerError(w, err.Error())
 			return
 		}
 
-		if err = cursor.All(r.Context(), &users); err != nil {
-			common.WriteInternalServerError(w, err.Error())
-			return
-		}
-
-		common.WriteJson(w, users)
+		common.WriteJson(w, bans)
 	})
 
 	router.With(httpin.NewInput(BanEntryDTO{})).Put("/bans", func(w http.ResponseWriter, r *http.Request) {

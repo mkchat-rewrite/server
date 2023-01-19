@@ -32,16 +32,15 @@ func CloseDB() error {
 func FetchFromDBAll[T interface{}](collection string, filter bson.M) ([]T, error) {
 	col := GetDBCollection(collection)
 
-	empty := make([]T, 0)
+	data := make([]T, 0)
 
 	cursor, err := col.Find(context.Background(), filter)
 	if err != nil {
-		return empty, err
+		return data, err
 	}
 
-	var data []T
 	if err = cursor.All(context.Background(), &data); err != nil {
-		return empty, err
+		return data, err
 	}
 
 	return data, nil
