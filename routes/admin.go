@@ -22,7 +22,7 @@ type BanEntry struct {
 	IpAddress string    `json:"ipAddress"`
 	Username  string    `json:"username"`
 	Reason    string    `json:"reason"`
-	Length    int       `json:"length"`
+	Length    int       `json:"length"` // in minutes
 	CreatedAt time.Time `json:"createdAt"`
 }
 
@@ -90,7 +90,7 @@ func Admin(router chi.Router) {
 		col := common.GetDBCollection("bans")
 
 		id := chi.URLParam(r, "id")
-		res, err := col.DeleteMany(r.Context(), bson.M{"_id": id})
+		res, err := col.DeleteOne(r.Context(), bson.M{"_id": id})
 		if err != nil {
 			common.WriteInternalServerError(w, err.Error())
 			return
