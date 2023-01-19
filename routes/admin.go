@@ -12,9 +12,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// store websocket connection data in here too
 type User struct {
-	Id       string `json:"id"`
-	Username string `json:"username"`
+	Id        string `json:"id"`
+	IpAddress string `json:"ipAddress"`
+	Username  string `json:"username"`
+	Room      string `json:"room"`
 }
 
 type BanEntry struct {
@@ -22,7 +25,7 @@ type BanEntry struct {
 	IpAddress string    `json:"ipAddress"`
 	Username  string    `json:"username"`
 	Reason    string    `json:"reason"`
-	Length    int       `json:"length"` // in minutes
+	Length    int       `json:"length"` // in seconds
 	CreatedAt time.Time `json:"createdAt"`
 }
 
@@ -30,7 +33,7 @@ type BanEntryDTO struct {
 	IpAddress string `in:"form=ipAddress;required"`
 	Username  string `in:"form=username;required"`
 	Reason    string `in:"form=reason;required"`
-	Length    int    `in:"form=length;required"` // in minutes
+	Length    int    `in:"form=length;required"` // in seconds
 }
 
 func Admin(router chi.Router) {
