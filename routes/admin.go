@@ -2,6 +2,7 @@ package routes
 
 import (
 	"chat/common"
+	"chat/common/users"
 	"fmt"
 	"net/http"
 	"time"
@@ -11,14 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-// store websocket connection data in here too
-type User struct {
-	Id        string `json:"id"`
-	IpAddress string `json:"ipAddress"`
-	Username  string `json:"username"`
-	Room      string `json:"room"`
-}
 
 type BanEntry struct {
 	ID        string    `json:"id" bson:"_id"`
@@ -37,15 +30,17 @@ type BanEntryDTO struct {
 }
 
 func Admin(router chi.Router) {
-	users := make([]User, 0)
+	userList := users.List()
 
-	users = append(users, User{
+	users.Add(users.User{
 		Id:       "123",
-		Username: "test",
+		IpAddress: "127.0.0.1",
+		Username: "admin",
+		Room: "testing",
 	})
 
 	router.Get("/users", func(w http.ResponseWriter, r *http.Request) {
-		common.WriteJson(w, users)
+		common.WriteJson(w, &userList)
 	})
 
 	router.Get("/bans", func(w http.ResponseWriter, r *http.Request) {
