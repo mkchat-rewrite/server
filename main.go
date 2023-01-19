@@ -1,14 +1,27 @@
 package main
 
 import (
+	"chat/common"
 	"chat/routes"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
+	if err := common.LoadEnv(); err != nil {
+		log.Fatal("Unable to load local .env file.")
+	}
+
+	if err := common.InitDB(os.Getenv("MONGO_URI"), "chat"); err != nil {
+		log.Fatal(err)
+	}
+
+	defer common.CloseDB()
+
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger)
@@ -22,7 +35,9 @@ func main() {
 		r.Route("/_admin", routes.Admin)
 	})
 
-	http.ListenAndServe(":3000", router)
+	if err := http.ListenAndServe(":8080", router); err != nil {
+		log.Fatal(err)
+	}
 }
 
 // https://ggicci.github.io/httpin/integrations/gochi
