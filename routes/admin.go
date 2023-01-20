@@ -4,6 +4,7 @@ import (
 	"chat/common"
 	"chat/common/users"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -33,10 +34,10 @@ func Admin(router chi.Router) {
 	userList := users.List()
 
 	users.Add(users.User{
-		Id:       "123",
+		Id:        "123",
 		IpAddress: "127.0.0.1",
-		Username: "admin",
-		Room: "testing",
+		Username:  "admin",
+		Room:      "testing",
 	})
 
 	router.Get("/users", func(w http.ResponseWriter, r *http.Request) {
@@ -92,5 +93,22 @@ func Admin(router chi.Router) {
 		}
 
 		w.WriteHeader(http.StatusNoContent)
+	})
+
+	router.Get("/ip-api-proxy", func(w http.ResponseWriter, r *http.Request) {
+		// https://api.incolumitas.com/
+
+		query := r.URL.Query().Get("query")
+
+		resp, err := http.Get(fmt.Sprintf("https://api.incolumitas.com/?q=%s", query))
+		if err != nil {
+			common.WriteInternalServerError(w, err.Error())
+			return
+		}
+
+		defer resp.Body.Close()
+
+		w.Header().Set("Content-Type", "application/json")
+		io.Copy(w, resp.Body)
 	})
 }
