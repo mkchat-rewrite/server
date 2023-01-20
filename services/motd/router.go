@@ -1,4 +1,4 @@
-package routes
+package motd
 
 import (
 	"embed"
@@ -10,10 +10,10 @@ import (
 	"github.com/go-chi/cors"
 )
 
-//go:embed resources
-var resources embed.FS
+//go:embed motds.txt
+var motds embed.FS
 
-func Motd(router chi.Router) {
+func Router(router chi.Router) {
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
 		AllowedMethods:   []string{"GET", "OPTIONS"},
@@ -29,7 +29,7 @@ func Motd(router chi.Router) {
 }
 
 func randomMotdByte() []byte {
-	data, err := resources.ReadFile("resources/motds.txt")
+	data, err := motds.ReadFile("motds.txt")
 	if err != nil {
 		panic(err)
 	}

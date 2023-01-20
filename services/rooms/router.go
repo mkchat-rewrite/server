@@ -1,4 +1,4 @@
-package routes
+package rooms
 
 import (
 	"chat/common"
@@ -29,7 +29,7 @@ type RoomEntryDTO struct {
 	Public bool   `in:"form=public;required"`
 }
 
-func Rooms(router chi.Router) {
+func Router(router chi.Router) {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		rooms, err := common.FetchFromDBAll[RoomEntry]("rooms", bson.M{"public": true})
 		if err != nil {

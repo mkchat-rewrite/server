@@ -1,4 +1,4 @@
-package routes
+package admin
 
 import (
 	"chat/common"
@@ -30,7 +30,7 @@ type BanEntryDTO struct {
 	Length    int    `in:"form=length;required"` // in seconds
 }
 
-func Admin(router chi.Router) {
+func Router(router chi.Router) {
 	userList := users.List()
 
 	users.Add(users.User{

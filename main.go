@@ -2,7 +2,9 @@ package main
 
 import (
 	"chat/common"
-	"chat/routes"
+	"chat/services/admin"
+	"chat/services/motd"
+	"chat/services/rooms"
 	"log"
 	"net/http"
 	"os"
@@ -31,9 +33,9 @@ func main() {
 	})
 
 	router.Route("/api", func(r chi.Router) {
-		r.Route("/_admin", routes.Admin)
-		r.Route("/motd", routes.Motd)
-		r.Route("/rooms", routes.Rooms)
+		r.Route("/_admin", admin.Router)
+		r.Route("/motd", motd.Router)
+		r.Route("/rooms", rooms.Router)
 	})
 
 	if err := http.ListenAndServe(":8080", router); err != nil {
