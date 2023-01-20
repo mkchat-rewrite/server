@@ -1,13 +1,16 @@
 package routes
 
 import (
+	"embed"
 	"math/rand"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 )
+
+//go:embed resources
+var resources embed.FS
 
 func Motd(router chi.Router) {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -16,7 +19,7 @@ func Motd(router chi.Router) {
 }
 
 func randomMotdByte() []byte {
-	data, err := os.ReadFile("./resources/motds.txt")
+	data, err := resources.ReadFile("resources/motds.txt")
 	if err != nil {
 		panic(err)
 	}
