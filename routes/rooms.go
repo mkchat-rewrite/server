@@ -9,6 +9,7 @@ import (
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // USER_JOINED, USER_LEFT
@@ -40,7 +41,26 @@ func Rooms(router chi.Router) {
 	})
 
 	router.With(httpin.NewInput(RoomEntryDTO{})).Put("/", func(w http.ResponseWriter, r *http.Request) {
-		common.WriteError(w, http.StatusNotImplemented, "Creating new rooms is not yet supported.")
+		input := r.Context().Value(httpin.Input).(*RoomEntryDTO)
+
+		room := RoomEntry{
+			ID:         primitive.NewObjectID().Hex(),
+			Name:       input.Name,
+			Public:     input.Public,
+			Users:      "users",
+			Messages:   "messages",
+			LastActive: time.Now(),
+			CreatedAt:  time.Now(),
+		}
+
+		col := common.GetDBCollection("rooms")
+		_, err := col.InsertOne(r.Context(), room)
+		if err != nil {
+			common.WriteInternalServerError(w, err.Error())
+			return
+		}
+
+		common.WriteJson(w, room)
 	})
 
 	router.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
