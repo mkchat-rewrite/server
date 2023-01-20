@@ -5,6 +5,7 @@ import (
 	"chat/routes"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -15,11 +16,11 @@ func main() {
 		log.Fatal("Unable to load local .env file.")
 	}
 
-	// if err := common.InitDB(os.Getenv("MONGO_URI"), "chat"); err != nil {
-	// 	log.Fatal(err)
-	// }
+	if err := common.InitDB(os.Getenv("MONGO_URI"), "chat"); err != nil {
+		log.Fatal(err)
+	}
 
-	// defer common.CloseDB()
+	defer common.CloseDB()
 
 	router := chi.NewRouter()
 
