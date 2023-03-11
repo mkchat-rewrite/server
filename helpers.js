@@ -1,8 +1,8 @@
 import fs from "fs/promises";
 import Scraper from "lite-meta-scraper";
 import { request } from "undici";
-import { getAvatarURL as avatarURL  } from "discordeno";
-import config from "./config.js";
+import { getAvatarURL as avatarURL } from "discordeno";
+import { config } from "./main.js";
 
 const badWords = /(((n|ɴ|[//])|(n|ɴ|[//])\s*)((i|ɪ|l|x|1|!|[*]|ee)|(i|ɪ|l|x|1|!|[*]|ee)\s*)((ɢ|g|b|q|6)|(ɢ|g|b|q|6)\s*){2}((e+r|e+\s*r)|a|ᴀ|@|3+r)|niga|ɴɪɢɢᴀ|discord.gg|teenxchat|rule34|pchat|r34|ziachat|\/nigg|n!!ggers|n.i.g.g)/gi;
 
@@ -146,7 +146,7 @@ export async function logModAction(ip, action, details) {
     if (action !== "ban" && action !== "unban") throw new Error("Value of arguement 'action' is invalid!");
     
     const embed = {
-        color: action === "ban" ? config.EMBED_COLORS.ERROR : config.EMBED_COLORS.INFO,
+        color: action === "ban" ? config.discord.embedColorMatch.error : config.discord.embedColorMatch.info,
         timestamp: new Date().toISOString(),
         title: `New ${action === "ban" ? "ban" : "unban"} performed by moderator ip: ${ip}`,
         fields: [
@@ -157,16 +157,16 @@ export async function logModAction(ip, action, details) {
         ]
     };
 
-    await executeWebhook(config.ACTION_WEBHOOK_URL, {
+    await executeWebhook(process.env["DISCORD_MODERATION_LOGGER"], {
         embeds: [ embed ]
     });
 };
 
 export async function logJoin(name, ip, id, room) {
-    await executeWebhook(config.JOIN_WEBHOOK_URL, {
+    await executeWebhook(process.env["DISCORD_JOIN_LOGGER"], {
         embeds: [{
             "description": `**${name}** joined the chat!`,
-            "color": config.EMBED_COLORS.INFO,
+            "color": config.discord.embedColorMatch.info,
             "timestamp": new Date().toISOString(),
             "fields": [
                 {
@@ -193,13 +193,13 @@ export function getStickerUrl(sticker) {
 
     switch(sticker.formatType) {
         case 1:
-            result.url = `${config.PROXY_URL}/discord/stickers/${sticker.id}.webp`;
+            result.url = `${config.proxyServerUrl}/discord/stickers/${sticker.id}.webp`;
             break;
         case 2:
-            result.url = `${config.PROXY_URL}/discord/stickers/${sticker.id}.png`;
+            result.url = `${config.proxyServerUrl}/discord/stickers/${sticker.id}.png`;
             break;
         case 3:
-            result.url = `${config.PROXY_URL}/discord/lottiesticker/${sticker.id}`;
+            result.url = `${config.proxyServerUrl}/discord/lottiesticker/${sticker.id}`;
             break;
     };
 
@@ -213,8 +213,8 @@ export async function getAvatarUrl(bot, author) {
     });
     const avatarId = discordAv.split("/")[5].split(".png")[0];
 
-    const { statusCode } = await request(`${config.PROXY_URL}/discord/avatars/${author.id}/${avatarId}.gif`);
-    return `${config.PROXY_URL}/discord/avatars/${author.id}/${avatarId}.${statusCode === 200 ? "gif" : "webp"}`;
+    const { statusCode } = await request(`${config.proxyServerUrl}/discord/avatars/${author.id}/${avatarId}.gif`);
+    return `${config.proxyServerUrl}/discord/avatars/${author.id}/${avatarId}.${statusCode === 200 ? "gif" : "webp"}`;
 };
 
 export function iteratorToArr(iterator) {
@@ -228,7 +228,7 @@ export function iteratorToArr(iterator) {
 };
 
 export async function checkBan(supabase, query) {
-    const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match(query);
+    const { data, error } = await supabase.from("bans").select().match(query);
 
     if (error) {
         throw new Error(error);
@@ -249,7 +249,7 @@ export function parseEmoji(text) {
         const id = emoji.match(/[0-9]{18,19}/g);
         const format = emoji.startsWith("&lt;a") ? "gif" : "png";
 
-        text = text.replace(emoji, `<img class="discordEmoji" src="${config.PROXY_URL}/discord/emojis/${id}.${format}" alt="discord emoji" style="height: 1.375em; width: 1.375em;" />`);
+        text = text.replace(emoji, `<img class="discordEmoji" src="${config.proxyServerUrl}/discord/emojis/${id}.${format}" alt="discord emoji" style="height: 1.375em; width: 1.375em;" />`);
     };
       
     return text;
@@ -263,9 +263,9 @@ export function attachmentParser(attachments) {
     
     for (const attachment of attachments) {
         if (videoFormats.includes(attachment.url.slice(-3))) {
-            result += `<video class="attachment" controls><source src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" /></video>`;
+            result += `<video class="attachment" controls><source src="${attachment.url.replace('https://cdn.discordapp.com', config.proxyServerUrl + '/discord')}" /></video>`;
         } else {
-            result += `<img src="${attachment.url.replace('https://cdn.discordapp.com', config.PROXY_URL + '/discord')}" class="attachment" alt="${attachment.filename}" />`
+            result += `<img src="${attachment.url.replace('https://cdn.discordapp.com', config.proxyServerUrl + '/discord')}" class="attachment" alt="${attachment.filename}" />`
         };
     };
 
@@ -314,7 +314,7 @@ export function loadCommands() {
 };
 
 export function fetchRoom(channelId) {
-    const rooms = config.ROOMS;
+    const rooms = config.roomMatch;
 
     for (const room in rooms) {
         if (BigInt(room) === channelId) return rooms[room];
@@ -342,4 +342,11 @@ export async function isRemoteAddressAsnBan(addr) {
 
     if (blacklist.includes(asn)) return true;
     return false;
+};
+
+export async function encodeUserAvatar(avatarUrl) {
+    const { body } = await request(avatarUrl);
+    const data = await body.arrayBuffer();
+    const baseStr = Buffer.from(data).toString("base64");
+    return `data:image/png;base64,${baseStr}`;
 };

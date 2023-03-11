@@ -5,7 +5,7 @@ export default {
         const room = args.join(" ");
 
         sendMessage(bot, message.channelId, { embeds: [{
-            color: config.EMBED_COLORS.INFO,
+            color: config.discord.embedColorMatch.info,
             description: `There are currently ${room ? users.list(room).length : users.size} users connected to ${room ? "room: " + room : "mkchat"}`
         }] });
     },

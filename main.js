@@ -1,75 +1,27 @@
-import * as traceUnhandled from "trace-unhandled";
-traceUnhandled.register();
 import fs from "fs/promises";
 import path from "path";
 import { createHash } from "crypto";
 import uws from "uWebSockets.js";
-import { request } from "undici";
 import mime from "mime-types";
-import { startBot, createBot, sendMessage, addRole, removeRole, getUser, Intents } from "discordeno";
+import { startBot, createBot, sendMessage, getUser, Intents } from "discordeno";
 import { nanoid } from "nanoid";
 import { FastRateLimit } from "fast-ratelimit";
 import { createClient } from "@supabase/supabase-js";
-import { executeWebhook, parseMessage, parseQuery, filterName, checkName, filterMessage, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, noDiscordMentions, parseGif, loadCommands, fetchRoom, isRemoteAddressAsnBan, abToStr } from "./helpers.js";
-import config from "./config.js";
+import { parseMessage, parseQuery, filterName, checkName, filterMessage, buildMessage, buildServerMessage, wordFilter, logModAction, logJoin, getStickerUrl, getAvatarUrl, iteratorToArr, checkBan, attachmentParser, encodeUserAvatar, parseGif, loadCommands, fetchRoom, isRemoteAddressAsnBan } from "./helpers.js";
 import { fileTypeFromBuffer } from "file-type";
 import { S3 } from "@aws-sdk/client-s3";
+import * as TOML from "toml";
 
-let lastWebhookMessageUsername = "";
-
-async function updateWebhookNameAndAvatar(webhookUrl, username, avatarData) {
-    await request(webhookUrl, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            name: username,
-            avatar: avatarData
-        })
-    });
-};
-
-async function encodeUserAvatar(avatarUrl) {
-    const { body } = await request(avatarUrl);
-    const data = await body.arrayBuffer();
-    const baseStr = Buffer.from(data).toString("base64");
-    return `data:image/png;base64,${baseStr}`;
-};
-
-async function sendTestWebhookChatMessage(username, avatarData, message) {
-    const webhookUrl = "https://discord.com/api/webhooks/1030821578390380654/symSSgNAhrBFhFBFHEa-mPpSjyeHmvvkBVZwraIMQATlY1KCUD30Ey15aOLaIafUZXXP";
-
-    if (lastWebhookMessageUsername !== username) await updateWebhookNameAndAvatar(webhookUrl, username, avatarData);
-
-    await executeWebhook(webhookUrl, {
-        content: message,
-        allowed_mentions: {
-            parse: []
-        }
-    });
-
-    lastWebhookMessageUsername = username;
-};
-
-process.on("uncaughtException", (err) => {
-    console.error(err.stack);
-    console.log("uncaught error, no exit");
-});
-
-process.on("unhandledRejection", (reason, promise) => {
-    console.log("Unhandled Rejection at:", promise, "reason:", reason);
-});
-
+export const config = TOML.parse(await fs.readFile(path.join(process.cwd(), "config.toml"), "utf8"));
 const ratelimit = new FastRateLimit({ threshold: 5, ttl: 10 });
 const app = uws.App();
-const supabase = createClient(config.DATABASE.URL, config.DATABASE.KEY);
+const supabase = createClient(process.env["SUPABASE_URL"], process.env["SUPABASE_KEY"]);
 const s3 = new S3({
     region: "auto",
-    endpoint: config.CLOUDFLARE_R2.URL,
+    endpoint: process.env["CLOUDFLARE_R2_URL"],
     credentials: {
-        accessKeyId: config.CLOUDFLARE_R2.ACCESS_KEY,
-        secretAccessKey: config.CLOUDFLARE_R2.SECRET,
+        accessKeyId: process.env["CLOUDFLARE_R2_ACCESS_KEY"],
+        secretAccessKey: process.env["CLOUDFLARE_R2_SECRET"],
     }
 });
 
@@ -103,7 +55,7 @@ const persistentUsers = new UserMap();
 const moderators = new Map(); // doesnt need list function for anything right now so a regular map will sufice
 
 const bot = createBot({
-    token: config.TOKEN,
+    token: process.env["DISCORD_BOT_TOKEN"],
     intents: Intents.Guilds | Intents.GuildMessages | Intents.MessageContent | Intents.GuildMessageReactions,
     events: {
         async ready() {
@@ -118,7 +70,7 @@ const bot = createBot({
         async messageCreate(bot, message) {
             if (message.isFromBot) return;
 
-            const room = fetchRoom(message.channelId);//config.ROOMS[message.channelId];
+            const room = fetchRoom(message.channelId);
             if (room) {
                 const sticker = message.stickerItems ? message.stickerItems[0] : null;
 
@@ -134,7 +86,7 @@ const bot = createBot({
                 app.publish(`rooms/${room}`, buildMessage({
                     author: user.username,
                     text: await parseGif(filterMessage(message.content)) + attachmentParser(message.attachments),
-                    badge: config.MOD_IDS.includes(message.authorId) ? "<i class='fa-solid fa-shield'></i> Moderator" : "<i class='fa-brands fa-discord'></i> Discord User",
+                    badge: config.discord.moderatorIdList.includes(message.authorId.toString()) ? "<i class='fa-solid fa-shield'></i> Moderator" : "<i class='fa-brands fa-discord'></i> Discord User",
                     sticker: sticker ? getStickerUrl(sticker) : null,
                     avatar: avatar,
                     color: getColor(user.username)
@@ -149,7 +101,7 @@ const bot = createBot({
             const command = bot.commands.has(cmd) ? bot.commands.get(cmd) : bot.commands.get(bot.aliases.get(cmd));
 
             try {
-                if (command.meta.restricted && !message.member.roles.includes(config.ROLE_IDS.MODERATION)) throw new Error("You do not have the required permission to use this command!");
+                if (command.meta.restricted && !message.member.roles.includes(BigInt(config.discord.roleIds.moderator))) throw new Error("You do not have the required permission to use this command!");
 
                 if (command) await command.exec(bot, message, args, config, users);
             } catch (err) {
@@ -157,19 +109,9 @@ const bot = createBot({
                     embeds: [{
                         title: ":x: Something went wrong! :x:",
                         description: `\`\`\`js\n${err}\n\`\`\``,
-                        color: config.EMBED_COLORS.ERROR
+                        color: config.discord.embedColorMatch.error
                     }]
                 });
-            };
-        },
-        async reactionAdd(bot, { userId, messageId, guildId, emoji }) {
-            for (const entry of config.ROLE_REACTIONS) {
-                if (messageId === entry.messageId && emoji.id === entry.emojiId) addRole(bot, guildId, userId, entry.roleId);
-            };
-        },
-        async reactionRemove(bot, { userId, messageId, guildId, emoji }) {
-            for (const entry of config.ROLE_REACTIONS) {
-                if (messageId === entry.messageId && emoji.id === entry.emojiId) removeRole(bot, guildId, userId, entry.roleId);
             };
         }
     }
@@ -208,7 +150,7 @@ app.ws("/", {
         const userData = users.get(ws.id);
         const room = userData?.room;
 
-        const { data, error } = await supabase.from(config.DATABASE.TABLE).select().match({ ip: userData.ip });
+        const { data, error } = await supabase.from("bans").select().match({ ip: userData.ip });
         if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
         // throwing because chat NEEDS to die once this happens because it's most likely important [as of 10/15/22 i have no idea what this was meant to convey as the error is not thrown]
 
@@ -221,7 +163,7 @@ app.ws("/", {
                 const username = message?.data?.username;
                 const userRoom = message?.data?.room;
                 const userlist = users.listBasic(userRoom);
-                const channel = config.CHANNELS[userRoom];
+                const channel = config.channelMatch[userRoom];
 
                 if (!userData?.ip || !username || !userRoom) {
                     ws.end(1, "invalid join data");
@@ -258,7 +200,7 @@ app.ws("/", {
                     id: ws.id
                 }));
 
-                ws.publish(`rooms/${user.room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.SUCCESS};">${filterName(user.username)} has joined!</span>`));
+                ws.publish(`rooms/${user.room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.discord.embedColorMatchStr.success};">${filterName(user.username)} has joined!</span>`));
 
                 if (userData?.room) ws.publish(`rooms/${userData.room}`, JSON.stringify({
                     type: "updateusers",
@@ -272,7 +214,7 @@ app.ws("/", {
 
                 if (channel) await sendMessage(bot, channel, {
                     embeds: [{
-                        color: config.EMBED_COLORS.SUCCESS,
+                        color: config.discord.embedColorMatchStr.success,
                         description: `**${user.username}** has joined the chat!`
                     }]
                 });
@@ -323,7 +265,7 @@ app.ws("/", {
 
                 /*if (users.get(ws.id).room === "rp") {
                     await sendTestWebhookChatMessage(users.get(ws.id).username, users.get(ws.id).avatarData, wordFilter(noDiscordMentions(message.text))+`${attachmentUrl ? `\n${attachmentUrl}` : ""}`)
-                } else */if (config.CHANNELS[users.get(ws.id).room]) await sendMessage(bot, config.CHANNELS[users.get(ws.id).room], {
+                } else */if (config.channelMatch[users.get(ws.id).room]) await sendMessage(bot, config.channelMatch[users.get(ws.id).room], {
                     content: `**${users.get(ws.id).username}:** ${wordFilter(/*noDiscordMentions(*/message.text/*)*/)}${attachmentUrl ? `\n${attachmentUrl}` : ""}`,
                     allowedMentions: {
                         parse: []
@@ -351,21 +293,6 @@ app.ws("/", {
         persistentUsers.set(userId, { ...persistentUser, isDisconnected: true });
 
         acknowledgeDisconnect(user.username, room);
-
-        // app.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.ERROR};">${filterName(user.username)} has left!</span>`));
-
-        // app.publish(`rooms/${room}`, JSON.stringify({
-        //     type: "updateusers",
-        //     users: users.list(room)
-        // }));
-
-        // const channel = config.CHANNELS[room];
-        // if (channel) await sendMessage(bot, channel, {
-        //     embeds: [{
-        //         color: config.EMBED_COLORS.ERROR,
-        //         description: `**${user.username}** has left the chat!`
-        //     }]
-        // });
     }
 });
 
@@ -375,21 +302,21 @@ app.get("/modlogin", (reply, req) => {
     const query = parseQuery(req.getQuery());
     const password = query.password;
 
-    if (password === config.MODERATION_PASSWORD) return reply.writeStatus("204").end();
+    if (password === process.env["MODERATOR_DASHBOARD_PASSWORD"]) return reply.writeStatus("204").end();
 
     reply.writeStatus("418").end(); // i'm a 🫖
 });
 
 app.get("/users", (reply, req) => {
     const query = parseQuery(req.getQuery());
-    if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end();
+    if (query.password != process.env["MODERATOR_DASHBOARD_PASSWORD"]) return reply.writeStatus("400").end();
 
     reply.writeStatus("200").end(JSON.stringify(iteratorToArr(persistentUsers.values())));
 });
 
 app.get("/bans", async (reply, req) => {
     const query = parseQuery(req.getQuery());
-    if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end();
+    if (query.password != process.env["MODERATOR_DASHBOARD_PASSWORD"]) return reply.writeStatus("400").end();
 
     reply.onAborted(() => {
         reply.aborted = true;
@@ -397,7 +324,7 @@ app.get("/bans", async (reply, req) => {
 
     if (reply.aborted) return;
 
-    const { data, error } = await supabase.from(config.DATABASE.TABLE).select();
+    const { data, error } = await supabase.from("bans").select();
     if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
 
     reply.writeStatus("200").end(JSON.stringify(data));
@@ -407,7 +334,7 @@ app.get("/doban", async (reply, req) => {
     const requestAddrs = req.getHeader("x-forwarded-for").split(", ");
     const modAddr = requestAddrs[0];
     const query = parseQuery(req.getQuery());
-    if (query.password != config.MODERATION_PASSWORD) return reply.writeStatus("400").end("Invalid password!");
+    if (query.password != process.env["MODERATOR_DASHBOARD_PASSWORD"]) return reply.writeStatus("400").end("Invalid password!");
 
     reply.onAborted(() => {
         reply.aborted = true;
@@ -425,7 +352,7 @@ app.get("/doban", async (reply, req) => {
         length: query.length
     };
 
-    const { data, error } = await supabase.from(config.DATABASE.TABLE).insert([banData]);
+    const { data, error } = await supabase.from("bans").insert([banData]);
     if (error) {
         console.error(`A fatal error has occured when attempting to ban: ${query.ip}`);
         return reply.writeStatus("400").end("Database error!");
@@ -440,15 +367,13 @@ app.get("/unban", async (reply, req) => {
     const requestAddrs = req.getHeader("x-forwarded-for").split(", ");
     const modAddr = requestAddrs[0];
     const query = parseQuery(req.getQuery());
-    if (query.password !== config.MODERATION_PASSWORD) return reply.writeStatus("400").end("Invalid password!");
+    if (query.password !== process.env["MODERATOR_DASHBOARD_PASSWORD"]) return reply.writeStatus("400").end("Invalid password!");
 
     reply.onAborted(() => {
         reply.aborted = true;
     });
 
     if (reply.aborted) return;
-    
-    if (query.ip === "174.209.105.218") return reply.writeStatus("400").end("fuck off bobster");
 
     const isBanned = await checkBan(supabase, { ip: query.ip }).catch(err => console.error(err));
     if (!isBanned) return reply.writeStatus("400").end("User isn't banned!");
@@ -477,7 +402,7 @@ app.get("/motd", async (reply, req) => {
     reply.writeStatus("200").end(motd);
 });
 
-app.listen(config.HOST, config.PORT, token => console.log(`${token ? "Listening" : "Failed to listen"} on port: ${config.PORT}`));
+app.listen(process.env["HOST"] || config.host, process.env["PORT"] || config.port, token => console.log(`${token ? "Listening" : "Failed to listen"}: ${token}`));
 
 await startBot(bot);
 
@@ -556,7 +481,7 @@ app.ws("/moderation", {
                 }));
                 break;
             case "requestbansupdate":
-                const { data, error } = await supabase.from(config.DATABASE.TABLE).select();
+                const { data, error } = await supabase.from("bans").select();
                 if (error) console.error("A fatal error has occured when querying ban data:", error); // hopefully this never actually happens :)
 
                 try {
@@ -604,17 +529,17 @@ function getAvatar(key) {
 };
 
 async function acknowledgeDisconnect(username, room) {
-    app.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.EMBED_COLOR_STRINGS.ERROR};">${filterName(username)} has left!</span>`));
+    app.publish(`rooms/${room}`, buildServerMessage(`<span class="blockquote" style="border-left-color: ${config.discord.embedColorMatchStr.error};">${filterName(username)} has left!</span>`));
 
     app.publish(`rooms/${room}`, JSON.stringify({
         type: "updateusers",
         users: users.list(room)
     }));
 
-    const channel = config.CHANNELS[room];
+    const channel = config.channelMatch[room];
     if (channel) await sendMessage(bot, channel, {
         embeds: [{
-            color: config.EMBED_COLORS.ERROR,
+            color: config.discord.embedColorMatch.error,
             description: `**${username}** has left the chat!`
         }]
     });

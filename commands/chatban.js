@@ -1,20 +1,20 @@
 import { sendMessage, addRole, removeRole, getMember } from "discordeno";
 
 export default {
-    exec: async (bot, message, _args, config, users) => {
+    exec: async (bot, message, _args, config, _users) => {
         const targetUserId = message.mentionedUserIds[0];
-        const targetIsChatBanned = (await getMember(bot, message.guildId, targetUserId)).roles.includes(config.ROLE_IDS.CHAT_BAN);
+        const targetIsChatBanned = (await getMember(bot, message.guildId, targetUserId)).roles.includes(config.discord.roleIds.chatBan);
 
         let content;
 
         if (targetIsChatBanned) {
-            addRole(bot, message.guildId, targetUserId, config.ROLE_IDS.CHAT_USER);
-            removeRole(bot, message.guildId, targetUserId, config.ROLE_IDS.CHAT_BAN);
+            addRole(bot, message.guildId, targetUserId, config.discord.roleIds.chatUser);
+            removeRole(bot, message.guildId, targetUserId, config.discord.roleIds.chatBan);
 
             content = `Removed the 'not h' role from <@${targetUserId}>`;
         } else {
-            removeRole(bot, message.guildId, targetUserId, config.ROLE_IDS.CHAT_USER);
-            addRole(bot, message.guildId, targetUserId, config.ROLE_IDS.CHAT_BAN);
+            removeRole(bot, message.guildId, targetUserId, config.discord.roleIds.chatUser);
+            addRole(bot, message.guildId, targetUserId, config.discord.roleIds.chatBan);
 
             content = `Added the 'not h' role to <@${targetUserId}>`;
         };
